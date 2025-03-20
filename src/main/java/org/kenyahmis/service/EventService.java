@@ -5,13 +5,16 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import org.kenyahmis.dto.EventBase;
 import org.kenyahmis.dto.EventList;
+import org.kenyahmis.dto.LinkedDto;
 import org.kenyahmis.dto.NewCaseDto;
 import org.kenyahmis.exception.RequestValidationException;
 import org.kenyahmis.model.Client;
 import org.kenyahmis.model.Event;
+import org.kenyahmis.model.LinkedCase;
 import org.kenyahmis.model.NewCase;
 import org.kenyahmis.repository.ClientRepository;
 import org.kenyahmis.repository.EventRepository;
+import org.kenyahmis.repository.LinkedCaseRepository;
 import org.kenyahmis.repository.NewCaseEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,24 +35,80 @@ public class EventService {
     private final EventRepository eventRepository;
     private final NewCaseEventRepository newCaseEventRepository;
     private final ClientRepository clientRepository;
+    private final LinkedCaseRepository linkedCaseRepository;
 
     public EventService(EventRepository eventRepository, final NewCaseEventRepository newCaseEventRepository,
-                        final ClientRepository clientRepository) {
+                        final ClientRepository clientRepository, final LinkedCaseRepository linkedCaseRepository) {
         this.eventRepository = eventRepository;
         this.newCaseEventRepository = newCaseEventRepository;
         this.clientRepository = clientRepository;
+        this.linkedCaseRepository = linkedCaseRepository;
     }
 
     public void createEvent(EventList<EventBase<?>> eventList) throws RequestValidationException {
         for (EventBase<?> eventBase: eventList) {
             if (eventBase.getEventType().equals("new_case")) {
                 handleNewCaseEventUpload(eventBase);
+            } else if ("linked_case".equals(eventBase.getEventType())) {
+                handleLinkedEventUpload(eventBase);
             } else {
                 LOG.warn("Event Type: {} not handled", eventBase.getEventType());
             }
         }
     }
 
+    private void handleLinkedEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+        ObjectMapper mapper = new ObjectMapper();
+        LinkedDto linkedDto = mapper.convertValue(eventBase.getEvent(), LinkedDto.class);
+        EventBase<LinkedDto> linkedCaseEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), linkedDto);
+        // validate
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<EventBase<LinkedDto>>> violations = validator.validate(linkedCaseEventBase);
+        if (!violations.isEmpty()) {
+            Map<String, String> errors = new HashMap<>();
+            violations.forEach(violation -> {
+                errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+            });
+            throw new RequestValidationException(errors);
+        }
+
+        // search for existing event
+        Optional<Event> optionalEvent = eventRepository.findByClient_PatientPkAndMflCodeAndEventType(linkedCaseEventBase.getClient().getPatientPk(),
+                linkedCaseEventBase.getEvent().getMflCode(), linkedCaseEventBase.getEventType());
+        if (optionalEvent.isEmpty()) {
+            // create event
+            Client client = new Client();
+            client.setCounty(linkedCaseEventBase.getClient().getCounty());
+            client.setSex(linkedCaseEventBase.getClient().getSex());
+            client.setSubCounty(linkedCaseEventBase.getClient().getSubCounty());
+            client.setWard(linkedCaseEventBase.getClient().getWard());
+//            client.setDateOfBirth();
+            client.setPatientPk(linkedCaseEventBase.getClient().getPatientPk());
+            clientRepository.save(client);
+
+
+            Event event = new Event();
+            event.setClient(client);
+            event.setEventType(linkedCaseEventBase.getEventType());
+//            event.setCreatedAt();
+//            event.setUpdatedAt();
+            event.setMflCode(linkedCaseEventBase.getEvent().getMflCode());
+            event.setTimestamp(LocalDateTime.now());
+            eventRepository.save(event);
+
+            LinkedCase linkedCase = new LinkedCase();
+//            newCaseEvent.setPositiveHivTestDate(newCaseEventBase.getEvent().getDateTestedPositive());
+            linkedCase.setEvent(event);
+            linkedCaseRepository.save(linkedCase);
+        } else {
+            // update event
+            LOG.info("Case event (Linked Case) already exists( mflCode: {}, patientPk: {} )", linkedDto.getMflCode(),
+                    linkedCaseEventBase.getClient().getPatientPk());
+//            Event newCaseEvent = optionalEvent.get();
+//            newCaseEvent.
+
+        }
+    }
     private void handleNewCaseEventUpload(EventBase<?> eventBase) throws RequestValidationException {
         ObjectMapper mapper = new ObjectMapper();
         NewCaseDto caseDto = mapper.convertValue(eventBase.getEvent(), NewCaseDto.class);
@@ -101,6 +160,5 @@ public class EventService {
 //            newCaseEvent.
 
             }
-
         }
     }

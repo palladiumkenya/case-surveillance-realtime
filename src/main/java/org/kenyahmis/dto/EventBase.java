@@ -1,19 +1,25 @@
 package org.kenyahmis.dto;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+
+@Schema
 @Data
 public class EventBase<T> {
     @NotNull
+    @Schema(description = "Client demographics")
     private ClientDto client;
     @NotBlank
+    @Schema(name = "eventType", description = "Type of event being transmitted", example = "linked_case, new_case")
     private String eventType;
     @Valid
     @NotNull
+    @Schema(description = "Event details being transmitted")
     private T event;
 
     public EventBase(ClientDto client, String eventType, T event) {

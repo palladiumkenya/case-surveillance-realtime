@@ -32,3 +32,12 @@ CREATE TABLE IF NOT EXISTS public.new_case (
 ALTER TABLE public.new_case DROP CONSTRAINT IF EXISTS fk_new_case_event_id;
 ALTER TABLE public.new_case ADD CONSTRAINT fk_new_case_event_id FOREIGN KEY (event_id) REFERENCES public.event(id);
 
+CREATE TABLE IF NOT EXISTS public.linked_case (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    event_id uuid NULL,
+    art_start_date timestamp NULL,
+    CONSTRAINT linked_case_pkey PRIMARY KEY (id)
+    );
+ALTER TABLE public.linked_case DROP CONSTRAINT IF EXISTS fk_linked_case_event_id;
+ALTER TABLE public.linked_case ADD CONSTRAINT fk_linked_case_event_id FOREIGN KEY (event_id) REFERENCES public.event(id);
+

@@ -2,11 +2,14 @@ package org.kenyahmis.config;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.OAuthFlow;
 import io.swagger.v3.oas.models.security.OAuthFlows;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.kenyahmis.dto.NewCaseDto;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +35,14 @@ public class SwaggerConfig {
                 .components(new Components()
                         .addSecuritySchemes(OAUTH_SCHEME, createOAuthScheme()))
                 .info(info);
+    }
+
+    @Bean
+    public OpenApiCustomizer schemaCustomizer() {
+        Schema<NewCaseDto> newCaseSchema = new Schema<>();
+        return openApi -> {
+            openApi.getComponents().addSchemas("NewCase", new Schema<NewCaseDto>());
+        };
     }
 
     private SecurityScheme createOAuthScheme() {
