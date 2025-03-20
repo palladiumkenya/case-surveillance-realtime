@@ -6,7 +6,8 @@ import lombok.Data;
 import org.kenyahmis.validator.ValidTimestamp;
 
 @Data
-public class LinkedDto {
+@Schema(name = "LinkedCase")
+public class LinkedCaseDto {
     @Schema(name = "positiveHivTestDate", example = "2023-11-10 00:00:00")
     @ValidTimestamp
     private String positiveHivTestDate;

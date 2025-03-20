@@ -37,13 +37,13 @@ public class SwaggerConfig {
                 .info(info);
     }
 
-    @Bean
-    public OpenApiCustomizer schemaCustomizer() {
-        Schema<NewCaseDto> newCaseSchema = new Schema<>();
-        return openApi -> {
-            openApi.getComponents().addSchemas("NewCase", new Schema<NewCaseDto>());
-        };
-    }
+//    @Bean
+//    public OpenApiCustomizer schemaCustomizer() {
+//        Schema<NewCaseDto> newCaseSchema = new Schema<>();
+//        return openApi -> {
+//            openApi.getComponents().addSchemas("NewCase", new Schema<NewCaseDto>());
+//        };
+//    }
 
     private SecurityScheme createOAuthScheme() {
         return new SecurityScheme()

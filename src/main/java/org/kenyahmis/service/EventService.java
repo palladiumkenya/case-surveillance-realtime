@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import org.kenyahmis.dto.EventBase;
 import org.kenyahmis.dto.EventList;
-import org.kenyahmis.dto.LinkedDto;
+import org.kenyahmis.dto.LinkedCaseDto;
 import org.kenyahmis.dto.NewCaseDto;
 import org.kenyahmis.exception.RequestValidationException;
 import org.kenyahmis.model.Client;
@@ -18,16 +18,11 @@ import org.kenyahmis.repository.LinkedCaseRepository;
 import org.kenyahmis.repository.NewCaseEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.stereotype.Service;
 import jakarta.validation.Validator;
-import org.springframework.validation.*;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import java.beans.PropertyEditor;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
 
 @Service
 public class EventService {
@@ -59,11 +54,11 @@ public class EventService {
 
     private void handleLinkedEventUpload(EventBase<?> eventBase) throws RequestValidationException {
         ObjectMapper mapper = new ObjectMapper();
-        LinkedDto linkedDto = mapper.convertValue(eventBase.getEvent(), LinkedDto.class);
-        EventBase<LinkedDto> linkedCaseEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), linkedDto);
+        LinkedCaseDto linkedDto = mapper.convertValue(eventBase.getEvent(), LinkedCaseDto.class);
+        EventBase<LinkedCaseDto> linkedCaseEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), linkedDto);
         // validate
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        Set<ConstraintViolation<EventBase<LinkedDto>>> violations = validator.validate(linkedCaseEventBase);
+        Set<ConstraintViolation<EventBase<LinkedCaseDto>>> violations = validator.validate(linkedCaseEventBase);
         if (!violations.isEmpty()) {
             Map<String, String> errors = new HashMap<>();
             violations.forEach(violation -> {

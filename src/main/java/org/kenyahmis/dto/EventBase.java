@@ -19,7 +19,7 @@ public class EventBase<T> {
     private String eventType;
     @Valid
     @NotNull
-    @Schema(description = "Event details being transmitted")
+    @Schema(description = "Event details being transmitted", anyOf = {LinkedCaseDto.class, NewCaseDto.class})
     private T event;
 
     public EventBase(ClientDto client, String eventType, T event) {
