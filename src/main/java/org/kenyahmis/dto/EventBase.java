@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.kenyahmis.validator.ValidEventType;
 
 
 @Schema
@@ -15,6 +16,7 @@ public class EventBase<T> {
     @Schema(description = "Client demographics")
     private ClientDto client;
     @NotBlank
+    @ValidEventType
     @Schema(name = "eventType", description = "Type of event being transmitted", example = "linked_case, new_case")
     private String eventType;
     @Valid
