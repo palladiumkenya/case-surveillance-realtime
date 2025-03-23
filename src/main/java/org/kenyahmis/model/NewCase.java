@@ -15,8 +15,7 @@ public class NewCase {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", referencedColumnName = "id")
+    @OneToOne
     private Event event;
     private LocalDateTime positiveHivTestDate;
 }

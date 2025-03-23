@@ -2,6 +2,7 @@ package org.kenyahmis.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.kenyahmis.validator.ValidDate;
 import org.kenyahmis.validator.ValidGender;
@@ -23,6 +24,7 @@ public class ClientDto {
     @ValidGender
     private String sex;
     @ValidDate
+    @NotNull
     @Schema(example = "1990-11-11")
     private String dob;
 }
