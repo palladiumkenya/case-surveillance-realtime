@@ -17,8 +17,6 @@ public class Event {
     private UUID id;
     private String eventType;
     private String mflCode;
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "client_id", referencedColumnName = "id")
     @JsonBackReference
     @ManyToOne
     private Client client;
@@ -28,6 +26,12 @@ public class Event {
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private NewCase newCase;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private AtRiskPbfw atRiskPbfw;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PrepLinkedAtRiskPbfw prepLinkedAtRiskPbfw;
     @Column(name = "load_date")
     private LocalDateTime timestamp;
     private LocalDateTime createdAt;
