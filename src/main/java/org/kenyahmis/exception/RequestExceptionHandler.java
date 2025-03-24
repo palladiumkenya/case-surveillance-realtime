@@ -1,5 +1,6 @@
 package org.kenyahmis.exception;
 
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.kenyahmis.dto.APIErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,5 +51,11 @@ public class RequestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<APIErrorResponse<?>> handleException(RequestValidationException ex) {
         LOG.info("Handling validation error");
         return new ResponseEntity<>(new APIErrorResponse<>(ex.getErrors(), "Invalid Request"), HttpStatus.BAD_REQUEST) ;
+    }
+
+    @ExceptionHandler(UnrecognizedPropertyException.class)
+    protected ResponseEntity<APIErrorResponse<?>> handleException(UnrecognizedPropertyException ex) {
+        LOG.info("Handling validation error");
+        return new ResponseEntity<>(new APIErrorResponse<>(ex.getMessage(), "Invalid Request"), HttpStatus.BAD_REQUEST) ;
     }
 }

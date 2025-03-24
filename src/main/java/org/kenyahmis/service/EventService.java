@@ -1,6 +1,7 @@
 package org.kenyahmis.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import org.kenyahmis.dto.*;
@@ -29,7 +30,7 @@ public class EventService {
     private final ClientMapper clientMapper;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public EventService(EventRepository eventRepository, final ClientRepository clientRepository,
+    public EventService(final EventRepository eventRepository, final ClientRepository clientRepository,
                         final ClientMapper clientMapper, final EventMapper eventMapper) {
         this.eventRepository = eventRepository;
         this.clientRepository = clientRepository;
@@ -37,7 +38,8 @@ public class EventService {
         this.clientMapper = clientMapper;
     }
 
-    public void createEvent(EventList<EventBase<?>> eventList) throws RequestValidationException {
+    @Transactional(value = Transactional.TxType.NEVER)
+    public void createEvent(EventList<EventBase<?>> eventList) {
         for (EventBase<?> eventBase: eventList) {
             if (NEW_EVENT_TYPE.equals(eventBase.getEventType())) {
                 handleNewCaseEventUpload(eventBase);
@@ -89,15 +91,17 @@ public class EventService {
         } else {
             // create new client event
             Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
-            clientRepository.save(client);
-            // persist event
             Event event = eventMapper.eventDtoToEventModel(linkedDto, null);
             event.setClient(client);
-            eventRepository.save(event);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
         }
     }
 
-    private void handleNewCaseEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+    private <T> T mapToObject(Object event, Class<T> type){
+      return  null;
+    }
+    private void handleNewCaseEventUpload(EventBase<?> eventBase) {
         ObjectMapper mapper = new ObjectMapper();
         NewCaseDto caseDto = mapper.convertValue(eventBase.getEvent(), NewCaseDto.class);
         EventBase<NewCaseDto> newCaseEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), caseDto);
@@ -120,15 +124,14 @@ public class EventService {
         } else {
             // create new client event
             Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
-            clientRepository.save(client);
-            // persist event
             Event event = eventMapper.eventDtoToEventModel(caseDto, null);
             event.setClient(client);
-            eventRepository.save(event);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
         }
     }
 
-    private void handleAtRiskPbfwEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+    private void handleAtRiskPbfwEventUpload(EventBase<?> eventBase) {
         AtRiskPbfwDto eventDto = mapper.convertValue(eventBase.getEvent(), AtRiskPbfwDto.class);
         EventBase<AtRiskPbfwDto> atRiskPbfwDtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
         // validate
@@ -150,14 +153,13 @@ public class EventService {
         } else {
             // create new client event
             Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
-            clientRepository.save(client);
-            // persist event
             Event event = eventMapper.eventDtoToEventModel(eventDto, null);
             event.setClient(client);
-            eventRepository.save(event);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
         }
     }
-    private void handlePrepLinkedAtRiskPbfwEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+    private void handlePrepLinkedAtRiskPbfwEventUpload(EventBase<?> eventBase) {
         PrepLinkedAtRiskPbfwDto eventDto = mapper.convertValue(eventBase.getEvent(), PrepLinkedAtRiskPbfwDto.class);
         EventBase<PrepLinkedAtRiskPbfwDto> prepLinkedAtRiskPbfwDtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
         // validate
@@ -180,15 +182,14 @@ public class EventService {
         } else {
             // create new client event
             Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
-            clientRepository.save(client);
-            // persist event
             Event event = eventMapper.eventDtoToEventModel(eventDto, null);
             event.setClient(client);
-            eventRepository.save(event);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
         }
     }
 
-    private void handleEligibleForVlEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+    private void handleEligibleForVlEventUpload(EventBase<?> eventBase) {
         EligibleForVlDto eventDto = mapper.convertValue(eventBase.getEvent(), EligibleForVlDto.class);
         EventBase<EligibleForVlDto> eligibleForVlDtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
         // validate
@@ -211,15 +212,14 @@ public class EventService {
         } else {
             // create new client event
             Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
-            clientRepository.save(client);
-            // persist event
             Event event = eventMapper.eventDtoToEventModel(eventDto, null);
             event.setClient(client);
-            eventRepository.save(event);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
         }
     }
 
-    private void handleUnsuppressedVlEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+    private void handleUnsuppressedVlEventUpload(EventBase<?> eventBase) {
         UnsuppressedViralLoadDto eventDto = mapper.convertValue(eventBase.getEvent(), UnsuppressedViralLoadDto.class);
         EventBase<UnsuppressedViralLoadDto> unsuppressedViralLoadDtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
         // validate
@@ -242,11 +242,10 @@ public class EventService {
         } else {
             // create new client event
             Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
-            clientRepository.save(client);
-            // persist event
             Event event = eventMapper.eventDtoToEventModel(eventDto, null);
             event.setClient(client);
-            eventRepository.save(event);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
         }
     }
     }

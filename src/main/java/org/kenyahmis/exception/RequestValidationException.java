@@ -1,13 +1,12 @@
 package org.kenyahmis.exception;
 
+import lombok.Getter;
+
 import java.util.Map;
 
-public class RequestValidationException extends Exception{
+@Getter
+public class RequestValidationException extends RuntimeException{
     Map<String, String> errors;
-
-    public Map<String, String> getErrors() {
-        return errors;
-    }
 
     public RequestValidationException(Map<String, String> errors) {
         this.errors = errors;

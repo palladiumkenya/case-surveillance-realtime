@@ -57,7 +57,7 @@ public class EventController {
             )
     )
     @PutMapping(value = "sync")
-    private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList) throws RequestValidationException {
+    private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList) {
         eventService.createEvent(eventList);
         return new ResponseEntity<>(new APIResponse("Successfully added client event"),  HttpStatus.OK);
     }
