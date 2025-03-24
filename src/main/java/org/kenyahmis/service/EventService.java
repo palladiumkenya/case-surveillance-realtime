@@ -47,6 +47,10 @@ public class EventService {
                 handleAtRiskPbfwEventUpload(eventBase);
             } else if (PREP_LINKED_AT_RISK_PBFW.equals(eventBase.getEventType())) {
                 handlePrepLinkedAtRiskPbfwEventUpload(eventBase);
+            } else if (ELIGIBLE_FOR_VL.equals(eventBase.getEventType())) {
+                handleEligibleForVlEventUpload(eventBase);
+            } else if (UNSUPPRESSED_VIRAL_LOAD.equals(eventBase.getEventType())) {
+                handleUnsuppressedVlEventUpload(eventBase);
             } else {
                 LOG.warn("Event Type: {} not handled", eventBase.getEventType());
             }
@@ -161,6 +165,68 @@ public class EventService {
         String patientPk = prepLinkedAtRiskPbfwDtoEventBase.getClient().getPatientPk(),
                 mflCode = prepLinkedAtRiskPbfwDtoEventBase.getEvent().getMflCode(),
                 eventType = prepLinkedAtRiskPbfwDtoEventBase.getEventType();
+        Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
+        if (opClient.isPresent()) {
+            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
+            // TODO Update client as well
+            Event event = opClient.get().getEvents()
+                    .stream()
+                    .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
+                            e.getEventType().equals(eventType))
+                    .findFirst().orElse(null);
+            event = eventMapper.eventDtoToEventModel(eventDto, event);
+            event.setClient(opClient.get());
+            eventRepository.save(event);
+        } else {
+            // create new client event
+            Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
+            clientRepository.save(client);
+            // persist event
+            Event event = eventMapper.eventDtoToEventModel(eventDto, null);
+            event.setClient(client);
+            eventRepository.save(event);
+        }
+    }
+
+    private void handleEligibleForVlEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+        EligibleForVlDto eventDto = mapper.convertValue(eventBase.getEvent(), EligibleForVlDto.class);
+        EventBase<EligibleForVlDto> eligibleForVlDtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
+        // validate
+        validateEventBase(eligibleForVlDtoEventBase);
+        String patientPk = eligibleForVlDtoEventBase.getClient().getPatientPk(),
+                mflCode = eligibleForVlDtoEventBase.getEvent().getMflCode(),
+                eventType = eligibleForVlDtoEventBase.getEventType();
+        Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
+        if (opClient.isPresent()) {
+            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
+            // TODO Update client as well
+            Event event = opClient.get().getEvents()
+                    .stream()
+                    .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
+                            e.getEventType().equals(eventType))
+                    .findFirst().orElse(null);
+            event = eventMapper.eventDtoToEventModel(eventDto, event);
+            event.setClient(opClient.get());
+            eventRepository.save(event);
+        } else {
+            // create new client event
+            Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
+            clientRepository.save(client);
+            // persist event
+            Event event = eventMapper.eventDtoToEventModel(eventDto, null);
+            event.setClient(client);
+            eventRepository.save(event);
+        }
+    }
+
+    private void handleUnsuppressedVlEventUpload(EventBase<?> eventBase) throws RequestValidationException {
+        UnsuppressedViralLoadDto eventDto = mapper.convertValue(eventBase.getEvent(), UnsuppressedViralLoadDto.class);
+        EventBase<UnsuppressedViralLoadDto> unsuppressedViralLoadDtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
+        // validate
+        validateEventBase(unsuppressedViralLoadDtoEventBase);
+        String patientPk = unsuppressedViralLoadDtoEventBase.getClient().getPatientPk(),
+                mflCode = unsuppressedViralLoadDtoEventBase.getEvent().mflCode(),
+                eventType = unsuppressedViralLoadDtoEventBase.getEventType();
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
             LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());

@@ -12,7 +12,8 @@ public class ValidEventTypeValidator implements ConstraintValidator<ValidEventTy
         if (value == null) {
             return true;
         }
-        List<String> eventTypes = List.of(LINKED_EVENT_TYPE, NEW_EVENT_TYPE, AT_RISK_PBFW, PREP_LINKED_AT_RISK_PBFW );
+        List<String> eventTypes = List.of(LINKED_EVENT_TYPE, NEW_EVENT_TYPE, AT_RISK_PBFW, PREP_LINKED_AT_RISK_PBFW,
+                ELIGIBLE_FOR_VL, UNSUPPRESSED_VIRAL_LOAD);
         return eventTypes.contains(value);
     }
 }

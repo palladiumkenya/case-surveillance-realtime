@@ -31,6 +31,12 @@ public class Event {
     private AtRiskPbfw atRiskPbfw;
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private EligibleForVl eligibleForVl;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UnsuppressedViralLoad unsuppressedViralLoad;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private PrepLinkedAtRiskPbfw prepLinkedAtRiskPbfw;
     @Column(name = "load_date")
     private LocalDateTime timestamp;

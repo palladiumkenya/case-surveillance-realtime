@@ -1,10 +1,7 @@
 package org.kenyahmis.mapper;
 
 import org.kenyahmis.constants.GlobalConstants;
-import org.kenyahmis.dto.AtRiskPbfwDto;
-import org.kenyahmis.dto.LinkedCaseDto;
-import org.kenyahmis.dto.NewCaseDto;
-import org.kenyahmis.dto.PrepLinkedAtRiskPbfwDto;
+import org.kenyahmis.dto.*;
 import org.kenyahmis.model.*;
 import org.mapstruct.Mapper;
 import java.time.LocalDateTime;
@@ -79,6 +76,74 @@ public abstract class EventMapper {
             }
             prepLinkedAtRiskPbfw.setEvent(event);
             event.setPrepLinkedAtRiskPbfw(prepLinkedAtRiskPbfw);
+        } else if (evenDto instanceof EligibleForVlDto) {
+            event.setEventType(GlobalConstants.ELIGIBLE_FOR_VL);
+            event.setMflCode( ((EligibleForVlDto) evenDto).getMflCode());
+            if (((EligibleForVlDto) evenDto).getCreatedAt() != null) {
+                event.setCreatedAt(LocalDateTime.parse(((EligibleForVlDto) evenDto).getCreatedAt(), formatter));
+            }
+            if (((EligibleForVlDto) evenDto).getUpdatedAt() != null) {
+                event.setUpdatedAt(LocalDateTime.parse(((EligibleForVlDto) evenDto).getUpdatedAt(), formatter));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            EligibleForVl eligibleForVl = (event.getEligibleForVl() == null) ?
+                    new EligibleForVl() : event.getEligibleForVl();
+            eligibleForVl.setPregnancyStatus(((EligibleForVlDto) evenDto).getPregnancyStatus());
+            eligibleForVl.setBreastFeedingStatus(((EligibleForVlDto) evenDto).getBreastFeedingStatus());
+            eligibleForVl.setLastVlResults(((EligibleForVlDto) evenDto).getLastVlResults());
+            if (((EligibleForVlDto) evenDto).getPositiveHivTestDate() !=  null) {
+                eligibleForVl.setPositiveHivTestDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getPositiveHivTestDate(),formatter));
+            }
+            if (((EligibleForVlDto) evenDto).getVisitDate() !=  null) {
+                eligibleForVl.setVisitDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getVisitDate(),formatter));
+            }
+            if (((EligibleForVlDto) evenDto).getArtStartDate() !=  null) {
+                eligibleForVl.setArtStartDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getArtStartDate(),formatter));
+            }
+            if (((EligibleForVlDto) evenDto).getLastVlOrderDate() !=  null) {
+                eligibleForVl.setLastVlOrderDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getLastVlOrderDate(),formatter));
+            }
+            if (((EligibleForVlDto) evenDto).getLastVlResultsDate() !=  null) {
+                eligibleForVl.setLastVlResultsDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getLastVlResultsDate(),formatter));
+            }
+            eligibleForVl.setEvent(event);
+            event.setEligibleForVl(eligibleForVl);
+
+        } else if (evenDto instanceof UnsuppressedViralLoadDto) {
+            event.setEventType(GlobalConstants.UNSUPPRESSED_VIRAL_LOAD);
+            event.setMflCode( ((UnsuppressedViralLoadDto) evenDto).mflCode());
+            if (((UnsuppressedViralLoadDto) evenDto).createdAt() != null) {
+                event.setCreatedAt(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).createdAt(), formatter));
+            }
+            if (((UnsuppressedViralLoadDto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).updatedAt(), formatter));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            UnsuppressedViralLoad unsuppressedViralLoad = (event.getUnsuppressedViralLoad() == null) ?
+                    new UnsuppressedViralLoad() : event.getUnsuppressedViralLoad();
+            unsuppressedViralLoad.setLastVlResults(((UnsuppressedViralLoadDto) evenDto).lastVlResults());
+            unsuppressedViralLoad.setPregnancyStatus(((UnsuppressedViralLoadDto) evenDto).pregnancyStatus());
+            unsuppressedViralLoad.setBreastFeedingStatus(((UnsuppressedViralLoadDto) evenDto).breastFeedingStatus());
+            if (((UnsuppressedViralLoadDto) evenDto).visitDate() !=  null) {
+                unsuppressedViralLoad.setVisitDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).visitDate(),formatter));
+            }
+            if (((UnsuppressedViralLoadDto) evenDto).lastEacEncounterDate() !=  null) {
+                unsuppressedViralLoad.setLastEacEncounterDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).lastEacEncounterDate(),formatter));
+            }
+            if (((UnsuppressedViralLoadDto) evenDto).positiveHivTestDate() !=  null) {
+                unsuppressedViralLoad.setPositiveHivTestDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).positiveHivTestDate(),formatter));
+            }
+            if (((UnsuppressedViralLoadDto) evenDto).artStartDate() !=  null) {
+                unsuppressedViralLoad.setArtStartDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).artStartDate(),formatter));
+            }
+            if (((UnsuppressedViralLoadDto) evenDto).lastVlOrderDate() !=  null) {
+                unsuppressedViralLoad.setLastVlOrderDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).lastVlOrderDate(),formatter));
+            }
+            if (((UnsuppressedViralLoadDto) evenDto).lastVlResultsDate() !=  null) {
+                unsuppressedViralLoad.setLastVlResultsDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).lastVlResultsDate(),formatter));
+            }
+            unsuppressedViralLoad.setEvent(event);
+            event.setUnsuppressedViralLoad(unsuppressedViralLoad);
         }
         return event;
     }

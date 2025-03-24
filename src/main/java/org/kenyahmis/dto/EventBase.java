@@ -17,12 +17,12 @@ public class EventBase<T> {
     @NotBlank
     @ValidEventType
     @Schema(name = "eventType", description = "Type of event being transmitted", example = "linked_case, new_case," +
-            " at_risk_pbfw, prep_linked_at_risk_pbfw")
+            " at_risk_pbfw, prep_linked_at_risk_pbfw, eligible_for_vl, unsuppressed_viral_load")
     private String eventType;
     @Valid
     @NotNull
     @Schema(description = "Event details being transmitted", anyOf = {LinkedCaseDto.class, NewCaseDto.class,
-            PrepLinkedAtRiskPbfwDto.class, AtRiskPbfwDto.class})
+            PrepLinkedAtRiskPbfwDto.class, AtRiskPbfwDto.class, EligibleForVlDto.class, UnsuppressedViralLoadDto.class})
     private T event;
 
     public EventBase(ClientDto client, String eventType, T event) {

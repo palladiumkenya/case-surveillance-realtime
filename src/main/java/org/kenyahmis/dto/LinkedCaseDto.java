@@ -21,7 +21,6 @@ public class LinkedCaseDto {
     private String createdAt;
     @Schema(name = "updatedAt", example = "2023-11-10 00:00:00")
     @ValidTimestamp
-    @NotNull
     private String updatedAt;
     @Schema(name = "artStartDate", example = "2023-11-10 00:00:00")
     @ValidTimestamp

@@ -17,7 +17,6 @@ public class PrepLinkedAtRiskPbfwDto {
     private String createdAt;
     @Schema(name = "updatedAt", example = "2023-11-10 00:00:00")
     @ValidTimestamp
-    @NotNull
     private String updatedAt;
     @Schema(name = "prepStartDate", example = "2023-11-10 00:00:00")
     @ValidTimestamp
