@@ -144,6 +144,36 @@ public abstract class EventMapper {
             }
             unsuppressedViralLoad.setEvent(event);
             event.setUnsuppressedViralLoad(unsuppressedViralLoad);
+        } else if (evenDto instanceof HeiWithoutPcrDto) {
+            event.setEventType(GlobalConstants.HEI_WITHOUT_PCR);
+            event.setMflCode( ((HeiWithoutPcrDto) evenDto).mflCode());
+            if (((HeiWithoutPcrDto) evenDto).createdAt() != null) {
+                event.setCreatedAt(LocalDateTime.parse(((HeiWithoutPcrDto) evenDto).createdAt(), formatter));
+            }
+            if (((HeiWithoutPcrDto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(LocalDateTime.parse(((HeiWithoutPcrDto) evenDto).updatedAt(), formatter));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            HeiWithoutPcr heiWithoutPcr = (event.getHeiWithoutPcr() == null) ? new HeiWithoutPcr() : event.getHeiWithoutPcr();
+            heiWithoutPcr.setHeiId(((HeiWithoutPcrDto) evenDto).heiId());
+
+            heiWithoutPcr.setEvent(event);
+            event.setHeiWithoutPcr(heiWithoutPcr);
+        } else if (evenDto instanceof HeiWithoutFinalOutcomeDto) {
+            event.setEventType(GlobalConstants.HEI_WITHOUT_FINAL_OUTCOME);
+            event.setMflCode( ((HeiWithoutFinalOutcomeDto) evenDto).mflCode());
+            if (((HeiWithoutFinalOutcomeDto) evenDto).createdAt() != null) {
+                event.setCreatedAt(LocalDateTime.parse(((HeiWithoutFinalOutcomeDto) evenDto).createdAt(), formatter));
+            }
+            if (((HeiWithoutFinalOutcomeDto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(LocalDateTime.parse(((HeiWithoutFinalOutcomeDto) evenDto).updatedAt(), formatter));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            HeiWithoutFinalOutcome heiWithoutFinalOutcome = (event.getHeiWithoutFinalOutcome() == null) ? new HeiWithoutFinalOutcome() : event.getHeiWithoutFinalOutcome();
+            heiWithoutFinalOutcome.setHeiId(((HeiWithoutFinalOutcomeDto) evenDto).heiId());
+
+            heiWithoutFinalOutcome.setEvent(event);
+            event.setHeiWithoutFinalOutcome(heiWithoutFinalOutcome);
         }
         return event;
     }

@@ -7,4 +7,6 @@ public class GlobalConstants {
     public static final String PREP_LINKED_AT_RISK_PBFW = "prep_linked_at_risk_pbfw";
     public static final String ELIGIBLE_FOR_VL = "eligible_for_vl";
     public static final String UNSUPPRESSED_VIRAL_LOAD = "unsuppressed_viral_load";
+    public static final String HEI_WITHOUT_PCR = "hei_without_pcr";
+    public static final String HEI_WITHOUT_FINAL_OUTCOME = "hei_without_final_outcome";
 }

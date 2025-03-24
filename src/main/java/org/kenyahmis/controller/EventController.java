@@ -59,6 +59,14 @@ public class EventController {
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "Unsuppressed Case",
                                             value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"unsuppressed_viral_load\",\"event\":{\"mflCode\":\"1234\",\"pregnancyStatus\":\"Pregnant\",\"breastFeedingStatus\":\"Yes\",\"lastVlResults\":\"300\",\"positiveHivTestDate\":\"2024-01-01 00:00:00\",\"visitDate\":\"2024-01-01 00:00:00\",\"artStartDate\":\"2024-01-01 00:00:00\",\"lastVlOrderDate\":\"2024-01-01 00:00:00\",\"lastVlResultsDate\":\"2024-01-01 00:00:00\",\"lastEacEncounterDate\":\"2024-01-01 00:00:00\",\"createdAt\":\"2024-01-01 00:00:00\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Hei Without PCR Case",
+                                            value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"hei_without_pcr\",\"event\":{\"mflCode\":\"1234\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"455\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Hei Without Final Outcome Case",
+                                            value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"hei_without_pcr\",\"event\":{\"mflCode\":\"1234\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"455\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
                                     )
                             }
                     )

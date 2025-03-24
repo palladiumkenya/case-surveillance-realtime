@@ -11,11 +11,8 @@ import org.kenyahmis.validator.ValidGender;
 @Schema(name = "Client", description = "Client demographics", implementation = ClientDto.class)
 @Data
 public class ClientDto {
-    @NotBlank
     private String county;
-    @NotBlank
     private String subCounty;
-    @NotBlank
     private String ward;
     @NotBlank
     @Schema(description = "Patient facility identifier", example = "185")

@@ -22,7 +22,8 @@ public class EventBase<T> {
     @Valid
     @NotNull
     @Schema(description = "Event details being transmitted", anyOf = {LinkedCaseDto.class, NewCaseDto.class,
-            PrepLinkedAtRiskPbfwDto.class, AtRiskPbfwDto.class, EligibleForVlDto.class, UnsuppressedViralLoadDto.class})
+            PrepLinkedAtRiskPbfwDto.class, AtRiskPbfwDto.class, EligibleForVlDto.class, UnsuppressedViralLoadDto.class,
+            HeiWithoutPcrDto.class, HeiWithoutFinalOutcomeDto.class})
     private T event;
 
     public EventBase(ClientDto client, String eventType, T event) {
