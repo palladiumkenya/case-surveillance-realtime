@@ -67,6 +67,14 @@ public class EventController {
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "Hei Without Final Outcome Case",
                                             value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"hei_without_pcr\",\"event\":{\"mflCode\":\"1234\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"455\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Hei Aged 6 To 8 Weeks Case",
+                                            value = "[{\"client\":{\"county\":\"Uasin Gishu\",\"subCounty\":\"Turbo\",\"ward\":\"Kiplombe\",\"patientPk\":\"977\",\"sex\":\"male\",\"dob\":\"2024-08-01\"},\"eventType\":\"hei_at_6_to_8_weeks\",\"event\":{\"mflCode\":\"33096\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"154\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Hei Aged 24 Weeks Case",
+                                            value = "[{\"client\":{\"county\":\"Uasin Gishu\",\"subCounty\":\"Turbo\",\"ward\":\"Kiplombe\",\"patientPk\":\"977\",\"sex\":\"male\",\"dob\":\"2024-08-01\"},\"eventType\":\"hei_at_24_weeks\",\"event\":{\"mflCode\":\"33096\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"355\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
                                     )
                             }
                     )

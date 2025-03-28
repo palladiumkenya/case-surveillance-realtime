@@ -174,6 +174,35 @@ public abstract class EventMapper {
 
             heiWithoutFinalOutcome.setEvent(event);
             event.setHeiWithoutFinalOutcome(heiWithoutFinalOutcome);
+        } else if (evenDto instanceof HeiAged6To8Dto) {
+            event.setEventType(GlobalConstants.HEI_AT_6_TO_8_WEEKS);
+            event.setMflCode( ((HeiAged6To8Dto) evenDto).mflCode());
+            if (((HeiAged6To8Dto) evenDto).createdAt() != null) {
+                event.setCreatedAt(LocalDateTime.parse(((HeiAged6To8Dto) evenDto).createdAt(), formatter));
+            }
+            if (((HeiAged6To8Dto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(LocalDateTime.parse(((HeiAged6To8Dto) evenDto).updatedAt(), formatter));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            HeiAged6To8Months heiAged6To8Months = (event.getHeiAged6To8Months() == null) ? new HeiAged6To8Months() : event.getHeiAged6To8Months();
+            heiAged6To8Months.setHeiId(((HeiAged6To8Dto) evenDto).heiId());
+            heiAged6To8Months.setEvent(event);
+            event.setHeiAged6To8Months(heiAged6To8Months);
+        } else if (evenDto instanceof HeiAged24Dto) {
+            event.setEventType(GlobalConstants.HEI_AT_24_WEEKS);
+            event.setMflCode( ((HeiAged24Dto) evenDto).mflCode());
+            if (((HeiAged24Dto) evenDto).createdAt() != null) {
+                event.setCreatedAt(LocalDateTime.parse(((HeiAged24Dto) evenDto).createdAt(), formatter));
+            }
+            if (((HeiAged24Dto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(LocalDateTime.parse(((HeiAged24Dto) evenDto).updatedAt(), formatter));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            HeiAged24Months heiAged24Months = (event.getHeiAged24Months() == null) ? new HeiAged24Months() : event.getHeiAged24Months();
+            heiAged24Months.setHeiId(((HeiAged24Dto) evenDto).heiId());
+
+            heiAged24Months.setEvent(event);
+            event.setHeiAged24Months(heiAged24Months);
         }
         return event;
     }

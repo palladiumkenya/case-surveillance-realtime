@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.kenyahmis.validator.ValidTimestamp;
 
+@Schema(name = "HeiWithoutPcr")
 public record HeiWithoutPcrDto(
         @Schema(name = "mflCode", example = "14423")
         @NotBlank

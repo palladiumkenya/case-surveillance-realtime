@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.kenyahmis.validator.ValidTimestamp;
 
-@Schema(name = "HeiWithoutFinalOutcome")
-public record HeiWithoutFinalOutcomeDto(
+@Schema(name = "HeiAged6To8Weeks")
+public record HeiAged6To8Dto(
         @Schema(name = "mflCode", example = "14423")
         @NotBlank
         String mflCode,

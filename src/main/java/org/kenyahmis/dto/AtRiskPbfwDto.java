@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.kenyahmis.validator.ValidTimestamp;
 
+@Schema(name = "AtRiskPbfw")
 @Data
 public class AtRiskPbfwDto {
     @Schema(name = "mflCode", example = "14423")

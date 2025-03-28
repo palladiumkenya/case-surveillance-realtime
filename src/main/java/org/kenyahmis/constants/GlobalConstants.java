@@ -9,4 +9,6 @@ public class GlobalConstants {
     public static final String UNSUPPRESSED_VIRAL_LOAD = "unsuppressed_viral_load";
     public static final String HEI_WITHOUT_PCR = "hei_without_pcr";
     public static final String HEI_WITHOUT_FINAL_OUTCOME = "hei_without_final_outcome";
+    public static final String HEI_AT_6_TO_8_WEEKS = "hei_at_6_to_8_weeks";
+    public static final String HEI_AT_24_WEEKS = "hei_at_24_weeks";
 }

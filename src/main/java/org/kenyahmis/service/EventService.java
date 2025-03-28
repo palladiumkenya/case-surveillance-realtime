@@ -10,7 +10,6 @@ import org.kenyahmis.mapper.ClientMapper;
 import org.kenyahmis.mapper.EventMapper;
 import org.kenyahmis.model.Client;
 import org.kenyahmis.model.Event;
-import org.kenyahmis.model.HeiWithoutFinalOutcome;
 import org.kenyahmis.repository.ClientRepository;
 import org.kenyahmis.repository.EventRepository;
 import org.slf4j.Logger;
@@ -58,7 +57,11 @@ public class EventService {
                 handleHeiWithoutPcrEventUpload(eventBase);
             } else if (HEI_WITHOUT_FINAL_OUTCOME.equals(eventBase.getEventType())) {
                 handleHeiWithoutFinaOutcomeEventUpload(eventBase);
-            }else {
+            } else if (HEI_AT_6_TO_8_WEEKS.equals(eventBase.getEventType())) {
+                handleHeiAged6To8MonthsEventUpload(eventBase);
+            } else if (HEI_AT_24_WEEKS.equals(eventBase.getEventType())) {
+                handleHeiAged24MonthsEventUpload(eventBase);
+            } else {
                 LOG.warn("Event Type: {} not handled", eventBase.getEventType());
             }
         }
@@ -302,6 +305,69 @@ public class EventService {
         String patientPk = heiWithoutFinalOutcomeEventBase.getClient().getPatientPk(),
                 mflCode = heiWithoutFinalOutcomeEventBase.getEvent().mflCode(),
                 eventType = heiWithoutFinalOutcomeEventBase.getEventType();
+        Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
+        if (opClient.isPresent()) {
+            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
+            // TODO Update client as well
+            Event event = opClient.get().getEvents()
+                    .stream()
+                    .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
+                            e.getEventType().equals(eventType))
+                    .findFirst().orElse(null);
+            event = eventMapper.eventDtoToEventModel(eventDto, event);
+            event.setClient(opClient.get());
+            eventRepository.save(event);
+//            opClient.get().getEvents().add(event);
+//            clientRepository.save(opClient.get());
+        } else {
+            // create new client event
+            Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
+            Event event = eventMapper.eventDtoToEventModel(eventDto, null);
+            event.setClient(client);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
+        }
+    }
+    private void handleHeiAged6To8MonthsEventUpload(EventBase<?> eventBase) {
+        HeiAged6To8Dto eventDto = mapper.convertValue(eventBase.getEvent(), HeiAged6To8Dto.class);
+        EventBase<HeiAged6To8Dto> heiAged6To8DtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
+        // validate
+        validateEventBase(heiAged6To8DtoEventBase);
+        String patientPk = heiAged6To8DtoEventBase.getClient().getPatientPk(),
+                mflCode = heiAged6To8DtoEventBase.getEvent().mflCode(),
+                eventType = heiAged6To8DtoEventBase.getEventType();
+        Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
+        if (opClient.isPresent()) {
+            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
+            // TODO Update client as well
+            Event event = opClient.get().getEvents()
+                    .stream()
+                    .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
+                            e.getEventType().equals(eventType))
+                    .findFirst().orElse(null);
+            event = eventMapper.eventDtoToEventModel(eventDto, event);
+            event.setClient(opClient.get());
+            eventRepository.save(event);
+//            opClient.get().getEvents().add(event);
+//            clientRepository.save(opClient.get());
+        } else {
+            // create new client event
+            Client client = clientMapper.clientDtoToClientModel(eventBase.getClient());
+            Event event = eventMapper.eventDtoToEventModel(eventDto, null);
+            event.setClient(client);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
+        }
+    }
+
+    private void handleHeiAged24MonthsEventUpload(EventBase<?> eventBase) {
+        HeiAged24Dto eventDto = mapper.convertValue(eventBase.getEvent(), HeiAged24Dto.class);
+        EventBase<HeiAged24Dto> heiAged24DtoEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), eventDto);
+        // validate
+        validateEventBase(heiAged24DtoEventBase);
+        String patientPk = heiAged24DtoEventBase.getClient().getPatientPk(),
+                mflCode = heiAged24DtoEventBase.getEvent().mflCode(),
+                eventType = heiAged24DtoEventBase.getEventType();
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
             LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
