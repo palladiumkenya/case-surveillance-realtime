@@ -14,15 +14,12 @@ public record UnsuppressedViralLoadDto(
         String mflCode,
         @Schema(name = "visitDate", example = "2023-11-10 00:00:00")
         @ValidTimestamp
-        @NotNull
         String visitDate,
         @Schema(name = "positiveHivTestDate", example = "2023-11-10 00:00:00")
         @ValidTimestamp
-        @NotNull
         String positiveHivTestDate,
         @Schema(name = "artStartDate", example = "2023-11-10 00:00:00")
         @ValidTimestamp
-        @NotNull
         String artStartDate,
         String pregnancyStatus,
         String breastFeedingStatus,

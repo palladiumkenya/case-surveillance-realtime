@@ -22,11 +22,9 @@ public class EligibleForVlDto {
     private String visitDate;
     @Schema(name = "positiveHivTestDate", example = "2023-11-10 00:00:00")
     @ValidTimestamp
-    @NotNull
     private String positiveHivTestDate;
     @Schema(name = "artStartDate", example = "2023-11-10 00:00:00")
     @ValidTimestamp
-    @NotNull
     private String artStartDate;
     private String pregnancyStatus;
     private String breastFeedingStatus;
