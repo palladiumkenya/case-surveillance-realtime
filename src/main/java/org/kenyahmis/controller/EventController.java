@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import org.kenyahmis.dto.APIResponse;
 import org.kenyahmis.dto.EventBase;
 import org.kenyahmis.dto.EventList;
-import org.kenyahmis.exception.RequestValidationException;
 import org.kenyahmis.service.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

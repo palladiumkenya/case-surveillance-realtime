@@ -50,7 +50,7 @@ public class Event {
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private HeiAged24Months heiAged24Months;
-    @Column(name = "load_date")
+    @Column(name = "load_date", updatable = false)
     private LocalDateTime timestamp;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
