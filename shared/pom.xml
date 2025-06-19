@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.kenyahmis</groupId>
+		<artifactId>case-surveillance-realtime</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>shared</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>shared</name>
+	<description>shared</description>
+	<packaging>jar</packaging>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>17</java.version>
+		<version.org.apache.maven.plugins.maven-surefire-plugin>
+			3.2.5
+		</version.org.apache.maven.plugins.maven-surefire-plugin>
+	</properties>
+<!--	<dependencies>-->
+
+<!--	</dependencies>-->
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+<!--					<source>${maven.compiler.source}</source>-->
+<!--					<target>${maven.compiler.target}</target>-->
+<!--					<release>${maven.compiler.target}</release>-->
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${version.org.apache.maven.plugins.maven-surefire-plugin}</version>
+					<dependencies>
+						<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
+						<dependency>
+							<groupId>org.junit.jupiter</groupId>
+							<artifactId>junit-jupiter-engine</artifactId>
+							<version>5.10.2</version>
+						</dependency>
+					</dependencies>
+					<configuration>
+<!--						<test>org.jembi.jempi.shared.config.TestDGraphConfig</test>-->
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-enforcer-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>enforce</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore/>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+	</build>
+</project>
