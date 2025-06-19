@@ -5,7 +5,7 @@ services:
     build: ../api/
     image: kenyahmis/cs-api:latest
     ports:
-      - "8077:8088"
+      - "${API_PORT:-8099}:8088"
     restart: unless-stopped
     depends_on:
       - kafka
