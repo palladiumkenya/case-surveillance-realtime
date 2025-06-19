@@ -84,6 +84,7 @@ public class EventController {
     )
     @PutMapping(value = "sync")
     private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList) {
+        LOG.info("Processing {} records", eventList.size());
         eventList.forEach((Consumer<? super EventBase<?>>) event -> kafkaTemplate.send("events", event));
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }
