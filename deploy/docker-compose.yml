@@ -15,6 +15,7 @@ services:
       KEYCLOAK_JWT_CERT_URL: ${KEYCLOAK_JWT_CERT_URL}
 #      KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       SPRING_DOC_SERVER_URL: ${SPRING_DOC_SERVER_URL}
+      TZ: Africa/Nairobi
   worker:
     build: ../worker/
     image: kenyahmis/cs-worker:latest
@@ -26,6 +27,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      TZ: Africa/Nairobi
   kafka:
     image: bitnami/kafka:3.4.1
 #    user: root
@@ -40,4 +42,5 @@ services:
       KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://kafka:9094
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       ALLOW_PLAINTEXT_LISTENER: 'yes'
+      TZ: Africa/Nairobi
 
