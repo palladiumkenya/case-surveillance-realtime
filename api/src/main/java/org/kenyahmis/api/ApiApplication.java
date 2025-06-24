@@ -24,6 +24,9 @@ public class ApiApplication {
     private String bootstrapAddress;
 
     public static void main(String[] args) {
+        // Override JWK remote request timeouts
+        System.setProperty("com.nimbusds.jose.jwk.source.RemoteJWKSet.defaultHttpReadTimeout", "5000");
+        System.setProperty("com.nimbusds.jose.jwk.source.RemoteJWKSet.defaultHttpConnectTimeout", "5000");
         SpringApplication.run(ApiApplication.class, args);
     }
 
