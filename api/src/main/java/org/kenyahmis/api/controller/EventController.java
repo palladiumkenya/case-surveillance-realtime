@@ -1,5 +1,7 @@
 package org.kenyahmis.api.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/event")
@@ -84,8 +91,16 @@ public class EventController {
     )
     @PutMapping(value = "sync")
     private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList) {
-        LOG.info("Processing {} records", eventList.size());
-        eventList.forEach((Consumer<? super EventBase<?>>) event -> kafkaTemplate.send("events", event));
+        ObjectMapper mapper = new ObjectMapper();
+        Set<Object> mflSet = new HashSet<>();
+        eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
+            kafkaTemplate.send("events", eventBase);
+            Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
+            if (map.get("mflCode") != null) {
+                mflSet.add(map.get("mflCode"));
+            }
+        });
+        LOG.info("Processing {} records from sites {}", eventList.size(), mflSet.toString());
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }
 }

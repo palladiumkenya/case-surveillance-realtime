@@ -87,10 +87,9 @@ public class EventService {
         validateEventBase(linkedCaseEventBase);
         String patientPk = linkedCaseEventBase.getClient().getPatientPk(), mflCode = linkedCaseEventBase.getEvent().getMflCode(),
                 eventType = linkedCaseEventBase.getEventType();
-        LOG.info("Received linked event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received linked event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -123,10 +122,9 @@ public class EventService {
         validateEventBase(newCaseEventBase);
         String patientPk = newCaseEventBase.getClient().getPatientPk(), mflCode = newCaseEventBase.getEvent().getMflCode(),
                 eventType = newCaseEventBase.getEventType();
-        LOG.info("Received new case event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received new case event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -154,9 +152,8 @@ public class EventService {
         String patientPk = atRiskPbfwDtoEventBase.getClient().getPatientPk(), mflCode = atRiskPbfwDtoEventBase.getEvent().getMflCode(),
                 eventType = atRiskPbfwDtoEventBase.getEventType();
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
-        LOG.info("Received at risk pbfw event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received at risk pbfw event pk: {}, mflCode: {}", patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -185,10 +182,9 @@ public class EventService {
         String patientPk = prepLinkedAtRiskPbfwDtoEventBase.getClient().getPatientPk(),
                 mflCode = prepLinkedAtRiskPbfwDtoEventBase.getEvent().getMflCode(),
                 eventType = prepLinkedAtRiskPbfwDtoEventBase.getEventType();
-        LOG.info("Received prep linked event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received prep linked event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -218,10 +214,9 @@ public class EventService {
         String patientPk = eligibleForVlDtoEventBase.getClient().getPatientPk(),
                 mflCode = eligibleForVlDtoEventBase.getEvent().getMflCode(),
                 eventType = eligibleForVlDtoEventBase.getEventType();
-        LOG.info("Received eligible for VL event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received eligible for VL event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -251,10 +246,9 @@ public class EventService {
         String patientPk = unsuppressedViralLoadDtoEventBase.getClient().getPatientPk(),
                 mflCode = unsuppressedViralLoadDtoEventBase.getEvent().mflCode(),
                 eventType = unsuppressedViralLoadDtoEventBase.getEventType();
-        LOG.info("Received unsuppressed vl event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received unsuppressed vl event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -283,10 +277,9 @@ public class EventService {
         String patientPk = heiWithoutPcrDtoEventBase.getClient().getPatientPk(),
                 mflCode = heiWithoutPcrDtoEventBase.getEvent().mflCode(),
                 eventType = heiWithoutPcrDtoEventBase.getEventType();
-        LOG.info("Received hei without pcr event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received hei without pcr event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -315,10 +308,9 @@ public class EventService {
         String patientPk = heiWithoutFinalOutcomeEventBase.getClient().getPatientPk(),
                 mflCode = heiWithoutFinalOutcomeEventBase.getEvent().mflCode(),
                 eventType = heiWithoutFinalOutcomeEventBase.getEventType();
-        LOG.info("Received hei without fo event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received hei without fo event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -347,10 +339,9 @@ public class EventService {
         String patientPk = heiAged6To8DtoEventBase.getClient().getPatientPk(),
                 mflCode = heiAged6To8DtoEventBase.getEvent().mflCode(),
                 eventType = heiAged6To8DtoEventBase.getEventType();
-        LOG.info("Received hei aged 6 to 8 months event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received hei aged 6 to 8 months event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
@@ -380,10 +371,9 @@ public class EventService {
         String patientPk = heiAged24DtoEventBase.getClient().getPatientPk(),
                 mflCode = heiAged24DtoEventBase.getEvent().mflCode(),
                 eventType = heiAged24DtoEventBase.getEventType();
-        LOG.info("Received hei aged 24 months event pk: {}, mflCode: {}", patientPk, mflCode);
+        LOG.debug("Received hei aged 24 months event pk: {}, mflCode: {}", patientPk, mflCode);
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
-//            LOG.info("Found existing client pk:{}", opClient.get().getPatientPk());
             // TODO Update client as well
             Event event = opClient.get().getEvents()
                     .stream()
