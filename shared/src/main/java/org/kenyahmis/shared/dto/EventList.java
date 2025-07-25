@@ -5,13 +5,13 @@ import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.experimental.Delegate;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Schema(hidden = true)
 @Data
-public class EventList<EventBase> implements List<EventBase> {
+public class EventList<EventBase> implements Set<EventBase> {
     @Valid
     @Delegate
-    private List<EventBase> list = new ArrayList<>();
+    private Set<EventBase> list = new HashSet<>();
 }
