@@ -113,7 +113,6 @@ public class EventController {
         ObjectMapper mapper = new ObjectMapper();
         Set<Object> mflSet = new HashSet<>();
         eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
-            kafkaTemplate.send("events", eventBase);
             Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
             if (map.get("mflCode") != null) {
                 mflSet.add(map.get("mflCode"));
