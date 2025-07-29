@@ -15,6 +15,8 @@ services:
       KEYCLOAK_JWT_CERT_URL: ${KEYCLOAK_JWT_CERT_URL}
 #      KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       SPRING_DOC_SERVER_URL: ${SPRING_DOC_SERVER_URL}
+      CS_REDIS_HOST: ${CS_REDIS_HOST}
+      CS_REDIS_PORT: ${CS_REDIS_PORT}
       TZ: Africa/Nairobi
   worker:
     build: ../worker/
@@ -27,6 +29,11 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      TZ: Africa/Nairobi
+  cs_redis:
+    image: redis:7
+    restart: unless-stopped
+    environment:
       TZ: Africa/Nairobi
   kafka:
     image: bitnami/kafka:3.4.1
@@ -43,4 +50,8 @@ services:
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       ALLOW_PLAINTEXT_LISTENER: 'yes'
       TZ: Africa/Nairobi
+    volumes:
+      - kafka_data:/bitnami/kafka
+volumes:
+  kafka_data:
 

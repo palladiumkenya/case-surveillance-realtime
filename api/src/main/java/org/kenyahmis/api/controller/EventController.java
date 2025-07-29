@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import org.kenyahmis.api.service.CacheService;
 import org.kenyahmis.shared.dto.EventList;
 import org.kenyahmis.shared.dto.APIResponse;
 import org.kenyahmis.shared.dto.EventBase;
@@ -20,21 +21,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/event")
 public class EventController {
     private final static Logger LOG = LoggerFactory.getLogger(EventController.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final CacheService cacheService;
 
-    public EventController(KafkaTemplate kafkaTemplate) {
+    public EventController(KafkaTemplate kafkaTemplate, CacheService cacheService) {
         this.kafkaTemplate = kafkaTemplate;
+        this.cacheService = cacheService;
     }
 
     @Operation(
@@ -91,6 +95,21 @@ public class EventController {
     )
     @PutMapping(value = "sync")
     private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList) {
+        String mflMetadata = generatePayloadMetadata(eventList);
+        String key = generatePayloadKey(mflMetadata, eventList.size());
+        LOG.info("Received {} records from sites {}", eventList.size(), mflMetadata);
+        // check if request fingerprint is in cache
+        if (!cacheService.entryExists(key)) {
+            // produce message
+            eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", eventBase));
+            // add payload to cache
+            String rawKey = eventList.size() + mflMetadata;;
+            cacheService.addEntry(key, rawKey);
+            LOG.info("Processing {} records from sites {}", eventList.size(), mflMetadata);
+        }
+        return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
+    }
+    private String generatePayloadMetadata(EventList<EventBase<?>> eventList) {
         ObjectMapper mapper = new ObjectMapper();
         Set<Object> mflSet = new HashSet<>();
         eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
@@ -100,7 +119,25 @@ public class EventController {
                 mflSet.add(map.get("mflCode"));
             }
         });
-        LOG.info("Processing {} records from sites {}", eventList.size(), mflSet.toString());
-        return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
+        return mflSet.toString();
+    }
+
+    private String generatePayloadKey(String mflMetadata, int payloadSize) {
+        try {
+            String rawKey = payloadSize + mflMetadata;
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] encodedHash = digest.digest(rawKey.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : encodedHash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("MD5 algo not found");
+        }
     }
 }
