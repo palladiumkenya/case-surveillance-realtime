@@ -25,6 +25,7 @@ public class EligibleForVlDto {
     private String pregnancyStatus;
     private String breastFeedingStatus;
     private String lastVlResults;
+    private String vlOrderReason;
     @Schema(name = "lastVlOrderDate", example = "2023-11-10 00:00:00")
     @ValidTimestamp
     private String lastVlOrderDate;

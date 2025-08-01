@@ -24,7 +24,7 @@ public class EligibleForVl {
     private String pregnancyStatus;
     private String breastFeedingStatus;
     private String lastVlResults;
+    private String vlOrderReason;
     private LocalDateTime lastVlOrderDate;
     private LocalDateTime lastVlResultsDate;
-
 }
