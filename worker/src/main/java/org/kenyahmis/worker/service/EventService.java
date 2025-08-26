@@ -69,6 +69,8 @@ public class EventService {
                 handleHeiAged6To8MonthsEventUpload(eventBaseMessage);
             } else if (HEI_AT_24_WEEKS.equals(eventBaseMessage.getEventBase().getEventType())) {
                 handleHeiAged24MonthsEventUpload(eventBaseMessage);
+            } else if (ROLL_CALL.equals(eventBaseMessage.getEventBase().getEventType())) {
+                LOG.info("Received roll_call event, ignore");
             } else {
                 LOG.warn("Event Type: {} not handled", eventBaseMessage.getEventBase().getEventType());
             }
@@ -119,9 +121,7 @@ public class EventService {
             clientRepository.save(client);
         }
     }
-//    private <T> T mapToObject(Object event, Class<T> type){
-//      return  null;
-//    }
+
     private UUID getVendorId(String vendorName) {
         UUID vendorId = null;
         if (vendorName != null) {

@@ -6,14 +6,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.kenyahmis.shared.validator.ValidEventBase;
 import org.kenyahmis.shared.validator.ValidEventType;
 
 
 @Schema
 @Data
 @NoArgsConstructor
+@ValidEventBase
 public class EventBase<T> {
-    @NotNull
     @Schema(description = "Client demographics")
     private ClientDto client;
     @NotBlank
