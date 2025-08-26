@@ -44,7 +44,7 @@ public class EventService {
         this.clientMapper = clientMapper;
     }
 
-    @KafkaListener(id = "eventListener", topics = "events", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(id = "eventListener", topics = "events", containerFactory = "eventsKafkaListenerContainerFactory")
     @Transactional(value = Transactional.TxType.NEVER)
 //    public void createEvent(EventList<EventBase<?>> eventList) {
     public void createEvent(Set<EventBaseMessage<?>> eventBaseMessageList) {

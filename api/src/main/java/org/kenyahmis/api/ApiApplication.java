@@ -39,9 +39,19 @@ public class ApiApplication {
         return new KafkaAdmin(configs);
     }
 
-    public NewTopic topic() {
+    @Bean
+    public NewTopic eventsTopic() {
         return TopicBuilder.name("events")
                 .partitions(2)
+                .replicas(1)
+                .config("retention.ms", String.valueOf(Duration.ofDays(3).toMillis()))
+                .build();
+    }
+
+    @Bean
+    public NewTopic reportingManifestTopic() {
+        return TopicBuilder.name("reporting_manifest")
+                .partitions(1)
                 .replicas(1)
                 .config("retention.ms", String.valueOf(Duration.ofDays(3).toMillis()))
                 .build();
