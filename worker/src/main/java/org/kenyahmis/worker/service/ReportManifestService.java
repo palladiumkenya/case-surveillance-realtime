@@ -1,17 +1,18 @@
 package org.kenyahmis.worker.service;
 
 import jakarta.transaction.Transactional;
-import org.kenyahmis.shared.dto.EventBaseMessage;
 import org.kenyahmis.shared.dto.ManifestMessage;
 import org.kenyahmis.worker.model.ReportingManifest;
 import org.kenyahmis.worker.repository.ReportingManifestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
+@Service
 public class ReportManifestService {
     private final static Logger LOG = LoggerFactory.getLogger(EventService.class);
     private final ReportingManifestRepository reportingManifestRepository;

@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.kenyahmis.api.service.CacheService;
-import org.kenyahmis.shared.dto.EventBaseMessage;
-import org.kenyahmis.shared.dto.EventList;
-import org.kenyahmis.shared.dto.APIResponse;
-import org.kenyahmis.shared.dto.EventBase;
+import org.kenyahmis.shared.dto.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,22 +107,23 @@ public class EventController {
             // produce message
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
             // add payload to cache
-            String rawKey = eventList.size() + mflMetadata;;
+            String rawKey = eventList.size() + mflMetadata;
             cacheService.addEntry(key, rawKey);
+            kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflMetadata, emrVendor));
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
         }
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }
     private String generatePayloadMetadata(EventList<EventBase<?>> eventList) {
         ObjectMapper mapper = new ObjectMapper();
-        Set<Object> mflSet = new HashSet<>();
+        Set<String> mflSet = new HashSet<>();
         eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
             Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
             if (map.get("mflCode") != null) {
-                mflSet.add(map.get("mflCode"));
+                mflSet.add((String) map.get("mflCode"));
             }
         });
-        return mflSet.toString();
+        return mflSet.stream().findFirst().orElse(null);
     }
 
     private String generatePayloadKey(String mflMetadata, int payloadSize) {
