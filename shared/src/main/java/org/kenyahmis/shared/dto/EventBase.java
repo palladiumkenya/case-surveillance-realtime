@@ -22,6 +22,7 @@ public class EventBase<T> {
             " at_risk_pbfw, prep_linked_at_risk_pbfw, eligible_for_vl, unsuppressed_viral_load, hei_at_6_to_8_weeks," +
             "hei_at_24_weeks")
     private String eventType;
+    private String emrVersion;
     @Valid
     @NotNull
     @Schema(description = "Event details being transmitted", anyOf = {LinkedCaseDto.class, NewCaseDto.class,

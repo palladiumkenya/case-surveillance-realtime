@@ -43,7 +43,7 @@ public class WorkerApplication {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(JsonDeserializer.TYPE_MAPPINGS, "eventBase:org.kenyahmis.shared.dto.EventBase" );
+        props.put(JsonDeserializer.TYPE_MAPPINGS, "eventBaseMessage:org.kenyahmis.shared.dto.EventBaseMessage" );
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return props;
     }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.kenyahmis.api.service.CacheService;
+import org.kenyahmis.shared.dto.EventBaseMessage;
 import org.kenyahmis.shared.dto.EventList;
 import org.kenyahmis.shared.dto.APIResponse;
 import org.kenyahmis.shared.dto.EventBase;
@@ -16,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -94,18 +97,22 @@ public class EventController {
             )
     )
     @PutMapping(value = "sync")
-    private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList) {
+    private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList, @AuthenticationPrincipal Jwt jwt) {
+        String emrVendor =  jwt.getClaimAsString("emr");
+        if (emrVendor == null) {
+            LOG.warn("Records received from unconfirmed vendor");
+        }
         String mflMetadata = generatePayloadMetadata(eventList);
         String key = generatePayloadKey(mflMetadata, eventList.size());
-        LOG.info("Received {} records from sites {}", eventList.size(), mflMetadata);
+        LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
         // check if request fingerprint is in cache
         if (!cacheService.entryExists(key)) {
             // produce message
-            eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", eventBase));
+            eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
             // add payload to cache
             String rawKey = eventList.size() + mflMetadata;;
             cacheService.addEntry(key, rawKey);
-            LOG.info("Processing {} records from sites {}", eventList.size(), mflMetadata);
+            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
         }
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }

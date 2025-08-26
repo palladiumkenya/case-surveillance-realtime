@@ -3,8 +3,8 @@
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-PROJECT_1="$SCRIPT_DIR/api"
-PROJECT_2="$SCRIPT_DIR/shared"
+PROJECT_1="$SCRIPT_DIR/shared"
+PROJECT_2="$SCRIPT_DIR/api"
 DOCKER_DIR="$SCRIPT_DIR/deploy"
 
 echo "SCRIPT_DIR: [$SCRIPT_DIR]"

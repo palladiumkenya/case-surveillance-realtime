@@ -17,6 +17,9 @@ public class Event {
     private UUID id;
     private String eventType;
     private String mflCode;
+    @JoinColumn(name = "emrVendorId", referencedColumnName = "id")
+    private UUID emrVendorId;
+    private String emrVersion;
     @JsonBackReference
     @ManyToOne
     private Client client;
