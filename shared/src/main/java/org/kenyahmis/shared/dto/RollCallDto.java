@@ -7,7 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 public record RollCallDto(
         @Schema(name = "mflCode", example = "14423")
         @NotBlank
-        String mflCode
-) {
-
+        String mflCode,
+        @Schema(name = "emrVersion", example = "2.83")
+        String emrVersion
+){
 }
