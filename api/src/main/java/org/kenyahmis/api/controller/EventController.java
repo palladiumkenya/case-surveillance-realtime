@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.kenyahmis.api.service.CacheService;
-import org.kenyahmis.shared.dto.EventBaseMessage;
-import org.kenyahmis.shared.dto.EventList;
-import org.kenyahmis.shared.dto.APIResponse;
-import org.kenyahmis.shared.dto.EventBase;
+import org.kenyahmis.shared.dto.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -91,12 +85,17 @@ public class EventController {
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "Hei Aged 24 Weeks Case",
                                             value = "[{\"client\":{\"county\":\"Uasin Gishu\",\"subCounty\":\"Turbo\",\"ward\":\"Kiplombe\",\"patientPk\":\"977\",\"sex\":\"male\",\"dob\":\"2024-08-01\"},\"eventType\":\"hei_at_24_weeks\",\"event\":{\"mflCode\":\"33096\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"355\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Roll Call Event",
+                                            value = "[{\"eventType\":\"roll_call\",\"event\":{\"mflCode\":\"1234\"}}]"
                                     )
                             }
                     )
             )
     )
     @PutMapping(value = "sync")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList, @AuthenticationPrincipal Jwt jwt) {
         String emrVendor =  jwt.getClaimAsString("emr");
         if (emrVendor == null) {
@@ -110,22 +109,23 @@ public class EventController {
             // produce message
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
             // add payload to cache
-            String rawKey = eventList.size() + mflMetadata;;
+            String rawKey = eventList.size() + mflMetadata;
             cacheService.addEntry(key, rawKey);
+            kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflMetadata, emrVendor));
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
         }
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }
     private String generatePayloadMetadata(EventList<EventBase<?>> eventList) {
         ObjectMapper mapper = new ObjectMapper();
-        Set<Object> mflSet = new HashSet<>();
+        Set<String> mflSet = new HashSet<>();
         eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
             Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
             if (map.get("mflCode") != null) {
-                mflSet.add(map.get("mflCode"));
+                mflSet.add((String) map.get("mflCode"));
             }
         });
-        return mflSet.toString();
+        return mflSet.stream().findFirst().orElse(null);
     }
 
     private String generatePayloadKey(String mflMetadata, int payloadSize) {

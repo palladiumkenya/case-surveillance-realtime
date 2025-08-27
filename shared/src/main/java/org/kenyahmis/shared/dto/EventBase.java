@@ -6,14 +6,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.kenyahmis.shared.validator.ValidEventBase;
 import org.kenyahmis.shared.validator.ValidEventType;
 
 
 @Schema
 @Data
 @NoArgsConstructor
+@ValidEventBase
 public class EventBase<T> {
-    @NotNull
     @Schema(description = "Client demographics")
     private ClientDto client;
     @NotBlank
@@ -27,7 +28,7 @@ public class EventBase<T> {
     @NotNull
     @Schema(description = "Event details being transmitted", anyOf = {LinkedCaseDto.class, NewCaseDto.class,
             PrepLinkedAtRiskPbfwDto.class, AtRiskPbfwDto.class, EligibleForVlDto.class, UnsuppressedViralLoadDto.class,
-            HeiWithoutPcrDto.class, HeiWithoutFinalOutcomeDto.class, HeiAged6To8Dto.class, HeiAged24Dto.class})
+            HeiWithoutPcrDto.class, HeiWithoutFinalOutcomeDto.class, HeiAged6To8Dto.class, HeiAged24Dto.class, RollCallDto.class})
     private T event;
 
     public EventBase(ClientDto client, String eventType, T event) {
