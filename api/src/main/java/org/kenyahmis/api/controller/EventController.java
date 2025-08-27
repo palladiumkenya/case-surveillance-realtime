@@ -88,6 +88,10 @@ public class EventController {
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "Hei Aged 24 Weeks Case",
                                             value = "[{\"client\":{\"county\":\"Uasin Gishu\",\"subCounty\":\"Turbo\",\"ward\":\"Kiplombe\",\"patientPk\":\"977\",\"sex\":\"male\",\"dob\":\"2024-08-01\"},\"eventType\":\"hei_at_24_weeks\",\"event\":{\"mflCode\":\"33096\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"355\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Roll Call Event",
+                                            value = "[{\"eventType\":\"roll_call\",\"event\":{\"mflCode\":\"1234\"}}]"
                                     )
                             }
                     )
