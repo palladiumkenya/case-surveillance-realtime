@@ -122,7 +122,7 @@ public class EventController {
         eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
             Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
             if (map.get("mflCode") != null) {
-                mflSet.add((String) map.get("mflCode"));
+                mflSet.add(String.valueOf(map.get("mflCode")));
             }
         });
         return mflSet.stream().findFirst().orElse(null);
