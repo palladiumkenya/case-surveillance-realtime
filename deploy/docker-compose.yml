@@ -17,6 +17,7 @@ services:
       SPRING_DOC_SERVER_URL: ${SPRING_DOC_SERVER_URL}
       CS_REDIS_HOST: ${CS_REDIS_HOST}
       CS_REDIS_PORT: ${CS_REDIS_PORT}
+      RATE_LIMITING_ENABLED: ${RATE_LIMITING_ENABLED:-true}
       TZ: Africa/Nairobi
   worker:
     build: ../worker/

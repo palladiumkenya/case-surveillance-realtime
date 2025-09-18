@@ -105,12 +105,19 @@ public class EventController {
         String key = generatePayloadKey(mflMetadata, eventList.size());
         LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
         // check if request fingerprint is in cache
-        if (!cacheService.entryExists(key)) {
-            // produce message
+        if (cacheService.rateLimitingEnabled()) {
+            if (!cacheService.entryExists(key)) {
+                // produce message
+                eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
+                // add payload to cache
+                String rawKey = eventList.size() + mflMetadata;
+                cacheService.addEntry(key, rawKey);
+                kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflMetadata, emrVendor));
+                LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
+            }
+        } else {
+            LOG.warn("Facility rate limiting is disabled");
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
-            // add payload to cache
-            String rawKey = eventList.size() + mflMetadata;
-            cacheService.addEntry(key, rawKey);
             kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflMetadata, emrVendor));
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
         }
