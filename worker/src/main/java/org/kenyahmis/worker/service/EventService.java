@@ -68,7 +68,9 @@ public class EventService {
             } else if (HEI_AT_6_TO_8_WEEKS.equals(eventBaseMessage.getEventBase().getEventType())) {
                 handleHeiAged6To8MonthsEventUpload(eventBaseMessage);
             } else if (HEI_AT_24_WEEKS.equals(eventBaseMessage.getEventBase().getEventType())) {
-                handleHeiAged24MonthsEventUpload(eventBaseMessage);
+                eventBaseMessage.getEventBase().setEventType(HEI_AT_6_TO_8_WEEKS);
+                handleHeiAged6To8MonthsEventUpload(eventBaseMessage);
+//                handleHeiAged24MonthsEventUpload(eventBaseMessage);
             } else if (ROLL_CALL.equals(eventBaseMessage.getEventBase().getEventType())) {
                 LOG.info("Received roll_call event, ignore");
             } else {
