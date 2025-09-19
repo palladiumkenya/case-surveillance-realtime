@@ -1,5 +1,7 @@
 package org.kenyahmis.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -31,6 +33,13 @@ public class ApiApplication {
         SpringApplication.run(ApiApplication.class, args);
     }
 
+    //Jackson config
+    @Bean
+    public ObjectMapper mapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+        return mapper;
+    }
     //Producer configs
     @Bean
     public KafkaAdmin admin() {

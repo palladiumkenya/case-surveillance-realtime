@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ManifestMessage {
-    private String mflCode;
+    private Set<String> mflCodes;
     private String vendorName;
 }

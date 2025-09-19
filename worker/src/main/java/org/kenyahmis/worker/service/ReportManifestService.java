@@ -25,14 +25,16 @@ public class ReportManifestService {
     @Transactional(value = Transactional.TxType.NEVER)
     public void createManifest(ManifestMessage manifestMessage) {
         LocalDate reportDate = LocalDate.now();
-        Optional<ReportingManifest> optionalReportingManifest =  reportingManifestRepository.findByMflCodeAndReportDate(manifestMessage.getMflCode(), reportDate);
-        if (optionalReportingManifest.isEmpty()) {
-            // add manifest
-            LOG.info("Adding manifest for {} on {}", manifestMessage.getMflCode(), reportDate);
-            ReportingManifest reportingManifest = new ReportingManifest();
-            reportingManifest.setReportDate(reportDate);
-            reportingManifest.setMflCode(manifestMessage.getMflCode());
-            reportingManifestRepository.save(reportingManifest);
+        for (String mflCode: manifestMessage.getMflCodes()) {
+            Optional<ReportingManifest> optionalReportingManifest =  reportingManifestRepository.findByMflCodeAndReportDate(mflCode, reportDate);
+            if (optionalReportingManifest.isEmpty()) {
+                // add manifest
+                LOG.info("Adding manifest for {} on {}", mflCode, reportDate);
+                ReportingManifest reportingManifest = new ReportingManifest();
+                reportingManifest.setReportDate(reportDate);
+                reportingManifest.setMflCode(mflCode);
+                reportingManifestRepository.save(reportingManifest);
+            }
         }
     }
 }

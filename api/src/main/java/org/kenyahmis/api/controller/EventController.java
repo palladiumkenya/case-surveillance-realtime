@@ -1,5 +1,6 @@
 package org.kenyahmis.api.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.kenyahmis.api.service.CacheService;
+import org.kenyahmis.api.utils.ChecksumUtils;
 import org.kenyahmis.shared.dto.*;
 
 import org.slf4j.Logger;
@@ -32,10 +34,12 @@ public class EventController {
     private final static Logger LOG = LoggerFactory.getLogger(EventController.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final CacheService cacheService;
+    private final ObjectMapper mapper;
 
-    public EventController(KafkaTemplate kafkaTemplate, CacheService cacheService) {
+    public EventController(KafkaTemplate kafkaTemplate, CacheService cacheService, ObjectMapper mapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.cacheService = cacheService;
+        this.mapper = mapper;
     }
 
     @Operation(
@@ -101,30 +105,37 @@ public class EventController {
         if (emrVendor == null) {
             LOG.warn("Records received from unconfirmed vendor");
         }
-        String mflMetadata = generatePayloadMetadata(eventList);
-        String key = generatePayloadKey(mflMetadata, eventList.size());
-        LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
+        Set<String> mflCodes = extractMflCodes(eventList);
+//        String key = generatePayloadKey(mflCodes, eventList.size());
+        LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
         // check if request fingerprint is in cache
         if (cacheService.rateLimitingEnabled()) {
-            if (!cacheService.entryExists(key)) {
+            String rawPayload;
+            try {
+                rawPayload = mapper.writeValueAsString(eventList);
+            } catch (JsonProcessingException je) {
+                throw new RuntimeException("Failed to parse payload");
+            }
+            String checksum = ChecksumUtils.generateChecksum(rawPayload);
+            if (!cacheService.entryExists(checksum)) {
                 // produce message
                 eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
                 // add payload to cache
-                String rawKey = eventList.size() + mflMetadata;
-                cacheService.addEntry(key, rawKey);
-                kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflMetadata, emrVendor));
-                LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
+                cacheService.addEntry(checksum, rawPayload);
+                kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflCodes, emrVendor));
+                LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
             }
         } else {
             LOG.warn("Facility rate limiting is disabled");
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
-            kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflMetadata, emrVendor));
-            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflMetadata, emrVendor);
+            kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflCodes, emrVendor));
+            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
         }
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }
-    private String generatePayloadMetadata(EventList<EventBase<?>> eventList) {
-        ObjectMapper mapper = new ObjectMapper();
+
+    // returns mfl_codes
+    private Set<String> extractMflCodes(EventList<EventBase<?>> eventList) {
         Set<String> mflSet = new HashSet<>();
         eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
             Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
@@ -132,25 +143,25 @@ public class EventController {
                 mflSet.add(String.valueOf(map.get("mflCode")));
             }
         });
-        return mflSet.stream().findFirst().orElse(null);
+        return mflSet;
     }
 
-    private String generatePayloadKey(String mflMetadata, int payloadSize) {
-        try {
-            String rawKey = payloadSize + mflMetadata;
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-            byte[] encodedHash = digest.digest(rawKey.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : encodedHash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("MD5 algo not found");
-        }
-    }
+//    private String generatePayloadKey(String mflMetadata, int payloadSize) {
+//        try {
+//            String rawKey = payloadSize + mflMetadata;
+//            MessageDigest digest = MessageDigest.getInstance("MD5");
+//            byte[] encodedHash = digest.digest(rawKey.getBytes(StandardCharsets.UTF_8));
+//            StringBuilder hexString = new StringBuilder();
+//            for (byte b : encodedHash) {
+//                String hex = Integer.toHexString(0xff & b);
+//                if (hex.length() == 1) {
+//                    hexString.append('0');
+//                }
+//                hexString.append(hex);
+//            }
+//            return hexString.toString();
+//        } catch (NoSuchAlgorithmException e) {
+//            throw new RuntimeException("MD5 algo not found");
+//        }
+//    }
 }
