@@ -10,12 +10,12 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Constraint(validatedBy = ValidTimestampValidator.class)
+@Constraint(validatedBy = ValidDateValidator.class)
 @Target({ TYPE, FIELD, ANNOTATION_TYPE })
 @Retention(RUNTIME)
 @Documented
 public @interface ValidDate {
-    String message() default "Invalid Date. Timestamp should confirm to yyyy-MM-dd";
+    String message() default "Invalid Date. Date should conform to yyyy-MM-dd";
     Class <?> [] groups() default {};
     Class <? extends Payload> [] payload() default {};
 }

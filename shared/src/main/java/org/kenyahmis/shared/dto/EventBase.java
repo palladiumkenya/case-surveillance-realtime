@@ -14,6 +14,7 @@ import org.kenyahmis.shared.validator.ValidEventType;
 @NoArgsConstructor
 @ValidEventBase
 public class EventBase<T> {
+    @Valid
     @Schema(description = "Client demographics")
     private ClientDto client;
     @NotBlank
