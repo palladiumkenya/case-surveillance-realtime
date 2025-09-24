@@ -21,7 +21,7 @@ public class EventBase<T> {
     @ValidEventType
     @Schema(name = "eventType", description = "Type of event being transmitted", example = "linked_case, new_case," +
             " at_risk_pbfw, prep_linked_at_risk_pbfw, eligible_for_vl, unsuppressed_viral_load, hei_at_6_to_8_weeks," +
-            "hei_at_24_weeks")
+            "hei_at_24_weeks, roll_call")
     private String eventType;
     @Valid
     @NotNull

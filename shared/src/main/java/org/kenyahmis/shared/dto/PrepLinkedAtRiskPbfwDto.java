@@ -25,6 +25,6 @@ public class PrepLinkedAtRiskPbfwDto {
     private String prepStartDate;
     @NotBlank
     private String prepRegimen;
-    @NotNull
+    @NotBlank
     private String prepNumber;
 }

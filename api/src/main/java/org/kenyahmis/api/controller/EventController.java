@@ -6,7 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import org.kenyahmis.api.exception.RequestValidationException;
 import org.kenyahmis.api.service.CacheService;
 import org.kenyahmis.api.utils.ChecksumUtils;
 import org.kenyahmis.shared.dto.*;
@@ -20,13 +24,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+
+import static org.kenyahmis.shared.constants.GlobalConstants.*;
 
 @RestController
 @RequestMapping("/api/event")
@@ -106,7 +110,6 @@ public class EventController {
             LOG.warn("Records received from unconfirmed vendor");
         }
         Set<String> mflCodes = extractMflCodes(eventList);
-//        String key = generatePayloadKey(mflCodes, eventList.size());
         LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
         // check if request fingerprint is in cache
         if (cacheService.rateLimitingEnabled()) {
@@ -118,6 +121,8 @@ public class EventController {
             }
             String checksum = ChecksumUtils.generateChecksum(rawPayload);
             if (!cacheService.entryExists(checksum)) {
+                // validate entire payload
+                validateRequest(eventList);
                 // produce message
                 eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
                 // add payload to cache
@@ -127,13 +132,13 @@ public class EventController {
             }
         } else {
             LOG.warn("Facility rate limiting is disabled");
+            validateRequest(eventList);
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
             kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflCodes, emrVendor));
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
         }
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }
-
     // returns mfl_codes
     private Set<String> extractMflCodes(EventList<EventBase<?>> eventList) {
         Set<String> mflSet = new HashSet<>();
@@ -146,22 +151,35 @@ public class EventController {
         return mflSet;
     }
 
-//    private String generatePayloadKey(String mflMetadata, int payloadSize) {
-//        try {
-//            String rawKey = payloadSize + mflMetadata;
-//            MessageDigest digest = MessageDigest.getInstance("MD5");
-//            byte[] encodedHash = digest.digest(rawKey.getBytes(StandardCharsets.UTF_8));
-//            StringBuilder hexString = new StringBuilder();
-//            for (byte b : encodedHash) {
-//                String hex = Integer.toHexString(0xff & b);
-//                if (hex.length() == 1) {
-//                    hexString.append('0');
-//                }
-//                hexString.append(hex);
-//            }
-//            return hexString.toString();
-//        } catch (NoSuchAlgorithmException e) {
-//            throw new RuntimeException("MD5 algo not found");
-//        }
-//    }
+    private void validateRequest(EventList<EventBase<?>> list) {
+        list.forEach((Consumer<? super EventBase<?>>) eventBase -> {
+            switch (eventBase.getEventType()){
+                case NEW_EVENT_TYPE -> validateEvent(eventBase.getEvent(), NewCaseDto.class);
+                case LINKED_EVENT_TYPE -> validateEvent(eventBase.getEvent(), LinkedCaseDto.class);
+                case AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), AtRiskPbfwDto.class);
+                case PREP_LINKED_AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), PrepLinkedAtRiskPbfwDto.class);
+                case ELIGIBLE_FOR_VL -> validateEvent(eventBase.getEvent(), EligibleForVlDto.class);
+                case UNSUPPRESSED_VIRAL_LOAD -> validateEvent(eventBase.getEvent(), UnsuppressedViralLoadDto.class);
+                case HEI_WITHOUT_PCR -> validateEvent(eventBase.getEvent(), HeiWithoutPcrDto.class);
+                case HEI_WITHOUT_FINAL_OUTCOME -> validateEvent(eventBase.getEvent(), HeiWithoutFinalOutcomeDto.class);
+                case HEI_AT_6_TO_8_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged6To8Dto.class);
+                case HEI_AT_24_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged24Dto.class);
+                case ROLL_CALL -> validateEvent(eventBase.getEvent(), RollCallDto.class);
+                default -> LOG.warn("Unsupported event type: {}", eventBase.getEventType());
+            }
+        });
+    }
+
+    private void validateEvent(Object object, Class<?> mapping){
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<Object>> violations = validator.validate(mapper.convertValue(object, mapping));
+        if (!violations.isEmpty()) {
+            Map<String, String> errors = new HashMap<>();
+            violations.forEach(violation -> {
+                        errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+                    }
+            );
+            throw new RequestValidationException(errors);
+        }
+    }
 }
