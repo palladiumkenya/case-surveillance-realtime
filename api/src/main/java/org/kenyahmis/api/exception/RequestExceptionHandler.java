@@ -49,7 +49,9 @@ public class RequestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RequestValidationException.class)
     protected ResponseEntity<APIErrorResponse<?>> handleException(RequestValidationException ex) {
-        LOG.info("Handling validation error");
+        for (Map.Entry<String, String> entry : ex.getErrors().entrySet()) {
+            LOG.error(entry.getKey() + " => " + entry.getValue() + " => Sites " + ex.mflCodes);
+        }
         return new ResponseEntity<>(new APIErrorResponse<>(ex.getErrors(), "Invalid Request"), HttpStatus.BAD_REQUEST) ;
     }
 

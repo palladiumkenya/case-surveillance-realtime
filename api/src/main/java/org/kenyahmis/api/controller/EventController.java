@@ -122,7 +122,7 @@ public class EventController {
             String checksum = ChecksumUtils.generateChecksum(rawPayload);
             if (!cacheService.entryExists(checksum)) {
                 // validate entire payload
-                validateRequest(eventList);
+                validateRequest(eventList, mflCodes);
                 // produce message
                 eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
                 // add payload to cache
@@ -132,7 +132,7 @@ public class EventController {
             }
         } else {
             LOG.warn("Facility rate limiting is disabled");
-            validateRequest(eventList);
+            validateRequest(eventList, mflCodes);
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
             kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflCodes, emrVendor));
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
@@ -151,26 +151,26 @@ public class EventController {
         return mflSet;
     }
 
-    private void validateRequest(EventList<EventBase<?>> list) {
+    private void validateRequest(EventList<EventBase<?>> list, Set<String> mflCodes) {
         list.forEach((Consumer<? super EventBase<?>>) eventBase -> {
             switch (eventBase.getEventType()){
-                case NEW_EVENT_TYPE -> validateEvent(eventBase.getEvent(), NewCaseDto.class);
-                case LINKED_EVENT_TYPE -> validateEvent(eventBase.getEvent(), LinkedCaseDto.class);
-                case AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), AtRiskPbfwDto.class);
-                case PREP_LINKED_AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), PrepLinkedAtRiskPbfwDto.class);
-                case ELIGIBLE_FOR_VL -> validateEvent(eventBase.getEvent(), EligibleForVlDto.class);
-                case UNSUPPRESSED_VIRAL_LOAD -> validateEvent(eventBase.getEvent(), UnsuppressedViralLoadDto.class);
-                case HEI_WITHOUT_PCR -> validateEvent(eventBase.getEvent(), HeiWithoutPcrDto.class);
-                case HEI_WITHOUT_FINAL_OUTCOME -> validateEvent(eventBase.getEvent(), HeiWithoutFinalOutcomeDto.class);
-                case HEI_AT_6_TO_8_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged6To8Dto.class);
-                case HEI_AT_24_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged24Dto.class);
-                case ROLL_CALL -> validateEvent(eventBase.getEvent(), RollCallDto.class);
+                case NEW_EVENT_TYPE -> validateEvent(eventBase.getEvent(), NewCaseDto.class, mflCodes);
+                case LINKED_EVENT_TYPE -> validateEvent(eventBase.getEvent(), LinkedCaseDto.class, mflCodes);
+                case AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), AtRiskPbfwDto.class, mflCodes);
+                case PREP_LINKED_AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), PrepLinkedAtRiskPbfwDto.class, mflCodes);
+                case ELIGIBLE_FOR_VL -> validateEvent(eventBase.getEvent(), EligibleForVlDto.class, mflCodes);
+                case UNSUPPRESSED_VIRAL_LOAD -> validateEvent(eventBase.getEvent(), UnsuppressedViralLoadDto.class, mflCodes);
+                case HEI_WITHOUT_PCR -> validateEvent(eventBase.getEvent(), HeiWithoutPcrDto.class, mflCodes);
+                case HEI_WITHOUT_FINAL_OUTCOME -> validateEvent(eventBase.getEvent(), HeiWithoutFinalOutcomeDto.class, mflCodes);
+                case HEI_AT_6_TO_8_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged6To8Dto.class, mflCodes);
+                case HEI_AT_24_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged24Dto.class, mflCodes);
+                case ROLL_CALL -> validateEvent(eventBase.getEvent(), RollCallDto.class, mflCodes);
                 default -> LOG.warn("Unsupported event type: {}", eventBase.getEventType());
             }
         });
     }
 
-    private void validateEvent(Object object, Class<?> mapping){
+    private void validateEvent(Object object, Class<?> mapping, Set<String> mflCodes){
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<Object>> violations = validator.validate(mapper.convertValue(object, mapping));
         if (!violations.isEmpty()) {
@@ -179,7 +179,7 @@ public class EventController {
                         errors.put(violation.getPropertyPath().toString(), violation.getMessage());
                     }
             );
-            throw new RequestValidationException(errors);
+            throw new RequestValidationException(errors, mflCodes);
         }
     }
 }
