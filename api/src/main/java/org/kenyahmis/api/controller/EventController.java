@@ -176,7 +176,7 @@ public class EventController {
         if (!violations.isEmpty()) {
             Map<String, String> errors = new HashMap<>();
             violations.forEach(violation -> {
-                        errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+                        errors.put(violation.getPropertyPath().toString() + " ("+ violation.getInvalidValue() +")", violation.getMessage());
                     }
             );
             throw new RequestValidationException(errors, mflCodes);
