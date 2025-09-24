@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.kenyahmis.shared.constants.GlobalConstants.*;
@@ -253,6 +255,8 @@ public class EventService {
         String patientPk = eligibleForVlDtoEventBase.getClient().getPatientPk(),
                 mflCode = eligibleForVlDtoEventBase.getEvent().getMflCode(),
                 eventType = eligibleForVlDtoEventBase.getEventType();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime visitDate = LocalDateTime.parse(eligibleForVlDtoEventBase.getEvent().getVisitDate(), formatter) ;
         LOG.debug("Received eligible for VL event pk: {}, mflCode: {}", patientPk, mflCode);
         UUID vendorId = getVendorId(eventBaseMessage.getEmrVendor());
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
@@ -261,7 +265,7 @@ public class EventService {
             Event event = opClient.get().getEvents()
                     .stream()
                     .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
-                            e.getEventType().equals(eventType))
+                            e.getEventType().equals(eventType) && e.getEligibleForVl().getVisitDate().equals(visitDate))
                     .findFirst().orElse(null);
             event = eventMapper.eventDtoToEventModel(eventDto, event);
             event.setClient(opClient.get());
