@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-
 import org.kenyahmis.shared.dto.*;
 import org.kenyahmis.worker.exception.RequestValidationException;
 import org.kenyahmis.worker.mapper.ClientMapper;
@@ -48,7 +47,7 @@ public class EventService {
     @Transactional(value = Transactional.TxType.NEVER)
 //    public void createEvent(EventList<EventBase<?>> eventList) {
     public void createEvent(Set<EventBaseMessage<?>> eventBaseMessageList) {
-        for (EventBaseMessage<?> eventBaseMessage: eventBaseMessageList) {
+        for (EventBaseMessage<?> eventBaseMessage : eventBaseMessageList) {
             if (NEW_EVENT_TYPE.equals(eventBaseMessage.getEventBase().getEventType())) {
                 handleNewCaseEventUpload(eventBaseMessage);
             } else if (LINKED_EVENT_TYPE.equals(eventBaseMessage.getEventBase().getEventType())) {
@@ -84,10 +83,15 @@ public class EventService {
         Set<ConstraintViolation<EventBase<T>>> violations = validator.validate(object);
         if (!violations.isEmpty()) {
             Map<String, String> errors = new HashMap<>();
-            violations.forEach(violation -> errors.put(violation.getPropertyPath().toString(), violation.getMessage()));
+            violations.forEach(violation -> {
+                        LOG.error("Request validation failed: {} : {}", violation.getPropertyPath().toString(), violation.getMessage() );
+                        errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+                    }
+            );
             throw new RequestValidationException(errors);
         }
     }
+
     private void handleLinkedEventUpload(EventBaseMessage<?> eventBaseMessage) throws RequestValidationException {
         ObjectMapper mapper = new ObjectMapper();
         LinkedCaseDto linkedDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), LinkedCaseDto.class);
@@ -115,7 +119,7 @@ public class EventService {
 //            eventRepository.save(event);
         } else {
             // create new client event
-            Client client = clientMapper.clientDtoToClientModel( eventBaseMessage.getEventBase().getClient());
+            Client client = clientMapper.clientDtoToClientModel(eventBaseMessage.getEventBase().getClient());
             Event event = eventMapper.eventDtoToEventModel(linkedDto, null);
             event.setClient(client);
             event.setEmrVendorId(vendorId);
@@ -127,13 +131,14 @@ public class EventService {
     private UUID getVendorId(String vendorName) {
         UUID vendorId = null;
         if (vendorName != null) {
-            Optional<EmrVendor> optionalEmrVendor =  emrVendorRepository.findByVendorName(vendorName);
+            Optional<EmrVendor> optionalEmrVendor = emrVendorRepository.findByVendorName(vendorName);
             if (optionalEmrVendor.isPresent()) {
                 vendorId = optionalEmrVendor.get().getId();
             }
         }
         return vendorId;
     }
+
     private void handleNewCaseEventUpload(EventBaseMessage<?> eventBaseMessage) {
         EventBase<?> eventBase = eventBaseMessage.getEventBase();
         ObjectMapper mapper = new ObjectMapper();
@@ -202,6 +207,7 @@ public class EventService {
             clientRepository.save(client);
         }
     }
+
     private void handlePrepLinkedAtRiskPbfwEventUpload(EventBaseMessage<?> eventBaseMessage) {
         PrepLinkedAtRiskPbfwDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), PrepLinkedAtRiskPbfwDto.class);
         EventBase<PrepLinkedAtRiskPbfwDto> prepLinkedAtRiskPbfwDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
@@ -309,6 +315,7 @@ public class EventService {
             clientRepository.save(client);
         }
     }
+
     private void handleHeiWithoutPcrEventUpload(EventBaseMessage<?> eventBaseMessage) {
         HeiWithoutPcrDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), HeiWithoutPcrDto.class);
         EventBase<HeiWithoutPcrDto> heiWithoutPcrDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
@@ -344,6 +351,7 @@ public class EventService {
             clientRepository.save(client);
         }
     }
+
     private void handleHeiWithoutFinaOutcomeEventUpload(EventBaseMessage<?> eventBaseMessage) {
         HeiWithoutFinalOutcomeDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), HeiWithoutFinalOutcomeDto.class);
         EventBase<HeiWithoutFinalOutcomeDto> heiWithoutFinalOutcomeEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
@@ -379,6 +387,7 @@ public class EventService {
             clientRepository.save(client);
         }
     }
+
     private void handleHeiAged6To8MonthsEventUpload(EventBaseMessage<?> eventBaseMessage) {
         HeiAged6To8Dto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), HeiAged6To8Dto.class);
         EventBase<HeiAged6To8Dto> heiAged6To8DtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
