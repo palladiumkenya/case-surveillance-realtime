@@ -122,7 +122,7 @@ public class EventController {
             String checksum = ChecksumUtils.generateChecksum(rawPayload);
             if (!cacheService.entryExists(checksum)) {
                 // validate entire payload
-                validateRequest(eventList, mflCodes);
+//                validateRequest(eventList, mflCodes);
                 // produce message
                 eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
                 // add payload to cache
@@ -132,7 +132,7 @@ public class EventController {
             }
         } else {
             LOG.warn("Facility rate limiting is disabled");
-            validateRequest(eventList, mflCodes);
+//            validateRequest(eventList, mflCodes);
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
             kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflCodes, emrVendor));
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
