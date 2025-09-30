@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.kenyahmis.shared.dto.*;
+import org.kenyahmis.shared.utils.FlexibleDateTimeParser;
 import org.kenyahmis.worker.exception.RequestValidationException;
 import org.kenyahmis.worker.mapper.ClientMapper;
 import org.kenyahmis.worker.mapper.EventMapper;
@@ -19,9 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.kenyahmis.shared.constants.GlobalConstants.*;
@@ -255,8 +254,7 @@ public class EventService {
         String patientPk = eligibleForVlDtoEventBase.getClient().getPatientPk(),
                 mflCode = eligibleForVlDtoEventBase.getEvent().getMflCode(),
                 eventType = eligibleForVlDtoEventBase.getEventType();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime visitDate = LocalDateTime.parse(eligibleForVlDtoEventBase.getEvent().getVisitDate(), formatter) ;
+        LocalDateTime visitDate = FlexibleDateTimeParser.parse(eligibleForVlDtoEventBase.getEvent().getVisitDate());
         LOG.debug("Received eligible for VL event pk: {}, mflCode: {}", patientPk, mflCode);
         UUID vendorId = getVendorId(eventBaseMessage.getEmrVendor());
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);

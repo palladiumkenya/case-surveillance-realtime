@@ -3,6 +3,7 @@ package org.kenyahmis.worker.mapper;
 import org.kenyahmis.shared.constants.GlobalConstants;
 import org.kenyahmis.shared.dto.*;
 import org.kenyahmis.worker.model.*;
+import org.kenyahmis.shared.utils.FlexibleDateTimeParser;
 import org.mapstruct.Mapper;
 
 import java.time.LocalDateTime;
@@ -11,21 +12,21 @@ import java.time.format.DateTimeFormatter;
 @Mapper(componentModel = "spring")
 public abstract class EventMapper {
     public Event eventDtoToEventModel(Object evenDto, Event existingEvent) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Event event = (existingEvent == null) ? new Event() : existingEvent;
         if (evenDto instanceof NewCaseDto) {
             event.setEventType(GlobalConstants.NEW_EVENT_TYPE);
             event.setMflCode( ((NewCaseDto) evenDto).getMflCode());
             if (((NewCaseDto) evenDto).getCreatedAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((NewCaseDto) evenDto).getCreatedAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((NewCaseDto) evenDto).getCreatedAt()));
             }
             if (((NewCaseDto) evenDto).getUpdatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((NewCaseDto) evenDto).getUpdatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((NewCaseDto) evenDto).getUpdatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             NewCase newCase = (event.getNewCase() == null) ? new NewCase() : event.getNewCase();
             if (((NewCaseDto) evenDto).getPositiveHivTestDate() != null) {
-             newCase.setPositiveHivTestDate(LocalDateTime.parse(((NewCaseDto) evenDto).getPositiveHivTestDate(), formatter));
+             newCase.setPositiveHivTestDate(FlexibleDateTimeParser.parse(((NewCaseDto) evenDto).getPositiveHivTestDate()));
             }
             newCase.setEvent(event);
             event.setNewCase(newCase);
@@ -33,15 +34,15 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.LINKED_EVENT_TYPE);
             event.setMflCode( ((LinkedCaseDto) evenDto).getMflCode());
             if (((LinkedCaseDto) evenDto).getCreatedAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((LinkedCaseDto) evenDto).getCreatedAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((LinkedCaseDto) evenDto).getCreatedAt()));
             }
             if (((LinkedCaseDto) evenDto).getUpdatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((LinkedCaseDto) evenDto).getUpdatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((LinkedCaseDto) evenDto).getUpdatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             LinkedCase linkedCase = (event.getLinkedCase() == null) ? new LinkedCase() : event.getLinkedCase();
             if (((LinkedCaseDto) evenDto).getArtStartDate() != null) {
-                linkedCase.setArtStartDate(LocalDateTime.parse(((LinkedCaseDto) evenDto).getArtStartDate(), formatter));
+                linkedCase.setArtStartDate(FlexibleDateTimeParser.parse(((LinkedCaseDto) evenDto).getArtStartDate()));
             }
             linkedCase.setEvent(event);
             event.setLinkedCase(linkedCase);
@@ -49,10 +50,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.AT_RISK_PBFW);
             event.setMflCode( ((AtRiskPbfwDto) evenDto).getMflCode());
             if (((AtRiskPbfwDto) evenDto).getCreatedAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((AtRiskPbfwDto) evenDto).getCreatedAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((AtRiskPbfwDto) evenDto).getCreatedAt()));
             }
             if (((AtRiskPbfwDto) evenDto).getUpdatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((AtRiskPbfwDto) evenDto).getUpdatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((AtRiskPbfwDto) evenDto).getUpdatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             AtRiskPbfw atRiskPbfw = (event.getAtRiskPbfw() == null) ? new AtRiskPbfw() : event.getAtRiskPbfw();
@@ -62,10 +63,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.PREP_LINKED_AT_RISK_PBFW);
             event.setMflCode( ((PrepLinkedAtRiskPbfwDto) evenDto).getMflCode());
             if (((PrepLinkedAtRiskPbfwDto) evenDto).getCreatedAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((PrepLinkedAtRiskPbfwDto) evenDto).getCreatedAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((PrepLinkedAtRiskPbfwDto) evenDto).getCreatedAt()));
             }
             if (((PrepLinkedAtRiskPbfwDto) evenDto).getUpdatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((PrepLinkedAtRiskPbfwDto) evenDto).getUpdatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((PrepLinkedAtRiskPbfwDto) evenDto).getUpdatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             PrepLinkedAtRiskPbfw prepLinkedAtRiskPbfw = (event.getPrepLinkedAtRiskPbfw() == null) ?
@@ -73,7 +74,7 @@ public abstract class EventMapper {
             prepLinkedAtRiskPbfw.setPrepNumber(((PrepLinkedAtRiskPbfwDto) evenDto).getPrepNumber());
             prepLinkedAtRiskPbfw.setPrepRegimen(((PrepLinkedAtRiskPbfwDto) evenDto).getPrepRegimen());
             if (((PrepLinkedAtRiskPbfwDto) evenDto).getPrepStartDate() !=  null) {
-                prepLinkedAtRiskPbfw.setPrepStartDate(LocalDateTime.parse(((PrepLinkedAtRiskPbfwDto) evenDto).getPrepStartDate(),formatter));
+                prepLinkedAtRiskPbfw.setPrepStartDate(FlexibleDateTimeParser.parse(((PrepLinkedAtRiskPbfwDto) evenDto).getPrepStartDate()));
             }
             prepLinkedAtRiskPbfw.setEvent(event);
             event.setPrepLinkedAtRiskPbfw(prepLinkedAtRiskPbfw);
@@ -81,10 +82,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.ELIGIBLE_FOR_VL);
             event.setMflCode( ((EligibleForVlDto) evenDto).getMflCode());
             if (((EligibleForVlDto) evenDto).getCreatedAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((EligibleForVlDto) evenDto).getCreatedAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((EligibleForVlDto) evenDto).getCreatedAt()));
             }
             if (((EligibleForVlDto) evenDto).getUpdatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((EligibleForVlDto) evenDto).getUpdatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((EligibleForVlDto) evenDto).getUpdatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             EligibleForVl eligibleForVl = (event.getEligibleForVl() == null) ?
@@ -93,19 +94,19 @@ public abstract class EventMapper {
             eligibleForVl.setBreastFeedingStatus(((EligibleForVlDto) evenDto).getBreastFeedingStatus());
             eligibleForVl.setLastVlResults(((EligibleForVlDto) evenDto).getLastVlResults());
             if (((EligibleForVlDto) evenDto).getPositiveHivTestDate() !=  null) {
-                eligibleForVl.setPositiveHivTestDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getPositiveHivTestDate(),formatter));
+                eligibleForVl.setPositiveHivTestDate(FlexibleDateTimeParser.parse(((EligibleForVlDto) evenDto).getPositiveHivTestDate()));
             }
             if (((EligibleForVlDto) evenDto).getVisitDate() !=  null) {
-                eligibleForVl.setVisitDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getVisitDate(),formatter));
+                eligibleForVl.setVisitDate(FlexibleDateTimeParser.parse(((EligibleForVlDto) evenDto).getVisitDate()));
             }
             if (((EligibleForVlDto) evenDto).getArtStartDate() !=  null) {
-                eligibleForVl.setArtStartDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getArtStartDate(),formatter));
+                eligibleForVl.setArtStartDate(FlexibleDateTimeParser.parse(((EligibleForVlDto) evenDto).getArtStartDate()));
             }
             if (((EligibleForVlDto) evenDto).getLastVlOrderDate() !=  null) {
-                eligibleForVl.setLastVlOrderDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getLastVlOrderDate(),formatter));
+                eligibleForVl.setLastVlOrderDate(FlexibleDateTimeParser.parse(((EligibleForVlDto) evenDto).getLastVlOrderDate()));
             }
             if (((EligibleForVlDto) evenDto).getLastVlResultsDate() !=  null) {
-                eligibleForVl.setLastVlResultsDate(LocalDateTime.parse(((EligibleForVlDto) evenDto).getLastVlResultsDate(),formatter));
+                eligibleForVl.setLastVlResultsDate(FlexibleDateTimeParser.parse(((EligibleForVlDto) evenDto).getLastVlResultsDate()));
             }
             eligibleForVl.setEvent(event);
             event.setEligibleForVl(eligibleForVl);
@@ -114,10 +115,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.UNSUPPRESSED_VIRAL_LOAD);
             event.setMflCode( ((UnsuppressedViralLoadDto) evenDto).mflCode());
             if (((UnsuppressedViralLoadDto) evenDto).createdAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).createdAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).createdAt()));
             }
             if (((UnsuppressedViralLoadDto) evenDto).updatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).updatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).updatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             UnsuppressedViralLoad unsuppressedViralLoad = (event.getUnsuppressedViralLoad() == null) ?
@@ -126,22 +127,22 @@ public abstract class EventMapper {
             unsuppressedViralLoad.setPregnancyStatus(((UnsuppressedViralLoadDto) evenDto).pregnancyStatus());
             unsuppressedViralLoad.setBreastFeedingStatus(((UnsuppressedViralLoadDto) evenDto).breastFeedingStatus());
             if (((UnsuppressedViralLoadDto) evenDto).visitDate() !=  null) {
-                unsuppressedViralLoad.setVisitDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).visitDate(),formatter));
+                unsuppressedViralLoad.setVisitDate(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).visitDate()));
             }
             if (((UnsuppressedViralLoadDto) evenDto).lastEacEncounterDate() !=  null) {
-                unsuppressedViralLoad.setLastEacEncounterDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).lastEacEncounterDate(),formatter));
+                unsuppressedViralLoad.setLastEacEncounterDate(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).lastEacEncounterDate()));
             }
             if (((UnsuppressedViralLoadDto) evenDto).positiveHivTestDate() !=  null) {
-                unsuppressedViralLoad.setPositiveHivTestDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).positiveHivTestDate(),formatter));
+                unsuppressedViralLoad.setPositiveHivTestDate(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).positiveHivTestDate()));
             }
             if (((UnsuppressedViralLoadDto) evenDto).artStartDate() !=  null) {
-                unsuppressedViralLoad.setArtStartDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).artStartDate(),formatter));
+                unsuppressedViralLoad.setArtStartDate(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).artStartDate()));
             }
             if (((UnsuppressedViralLoadDto) evenDto).lastVlOrderDate() !=  null) {
-                unsuppressedViralLoad.setLastVlOrderDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).lastVlOrderDate(),formatter));
+                unsuppressedViralLoad.setLastVlOrderDate(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).lastVlOrderDate()));
             }
             if (((UnsuppressedViralLoadDto) evenDto).lastVlResultsDate() !=  null) {
-                unsuppressedViralLoad.setLastVlResultsDate(LocalDateTime.parse(((UnsuppressedViralLoadDto) evenDto).lastVlResultsDate(),formatter));
+                unsuppressedViralLoad.setLastVlResultsDate(FlexibleDateTimeParser.parse(((UnsuppressedViralLoadDto) evenDto).lastVlResultsDate()));
             }
             unsuppressedViralLoad.setEvent(event);
             event.setUnsuppressedViralLoad(unsuppressedViralLoad);
@@ -149,10 +150,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.HEI_WITHOUT_PCR);
             event.setMflCode( ((HeiWithoutPcrDto) evenDto).mflCode());
             if (((HeiWithoutPcrDto) evenDto).createdAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((HeiWithoutPcrDto) evenDto).createdAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((HeiWithoutPcrDto) evenDto).createdAt()));
             }
             if (((HeiWithoutPcrDto) evenDto).updatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((HeiWithoutPcrDto) evenDto).updatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((HeiWithoutPcrDto) evenDto).updatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             HeiWithoutPcr heiWithoutPcr = (event.getHeiWithoutPcr() == null) ? new HeiWithoutPcr() : event.getHeiWithoutPcr();
@@ -164,10 +165,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.HEI_WITHOUT_FINAL_OUTCOME);
             event.setMflCode( ((HeiWithoutFinalOutcomeDto) evenDto).mflCode());
             if (((HeiWithoutFinalOutcomeDto) evenDto).createdAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((HeiWithoutFinalOutcomeDto) evenDto).createdAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((HeiWithoutFinalOutcomeDto) evenDto).createdAt()));
             }
             if (((HeiWithoutFinalOutcomeDto) evenDto).updatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((HeiWithoutFinalOutcomeDto) evenDto).updatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((HeiWithoutFinalOutcomeDto) evenDto).updatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             HeiWithoutFinalOutcome heiWithoutFinalOutcome = (event.getHeiWithoutFinalOutcome() == null) ? new HeiWithoutFinalOutcome() : event.getHeiWithoutFinalOutcome();
@@ -179,10 +180,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.HEI_AT_6_TO_8_WEEKS);
             event.setMflCode( ((HeiAged6To8Dto) evenDto).mflCode());
             if (((HeiAged6To8Dto) evenDto).createdAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((HeiAged6To8Dto) evenDto).createdAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((HeiAged6To8Dto) evenDto).createdAt()));
             }
             if (((HeiAged6To8Dto) evenDto).updatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((HeiAged6To8Dto) evenDto).updatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((HeiAged6To8Dto) evenDto).updatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             HeiAged6To8Months heiAged6To8Months = (event.getHeiAged6To8Months() == null) ? new HeiAged6To8Months() : event.getHeiAged6To8Months();
@@ -193,10 +194,10 @@ public abstract class EventMapper {
             event.setEventType(GlobalConstants.HEI_AT_24_WEEKS);
             event.setMflCode( ((HeiAged24Dto) evenDto).mflCode());
             if (((HeiAged24Dto) evenDto).createdAt() != null) {
-                event.setCreatedAt(LocalDateTime.parse(((HeiAged24Dto) evenDto).createdAt(), formatter));
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((HeiAged24Dto) evenDto).createdAt()));
             }
             if (((HeiAged24Dto) evenDto).updatedAt() != null) {
-                event.setUpdatedAt(LocalDateTime.parse(((HeiAged24Dto) evenDto).updatedAt(), formatter));
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((HeiAged24Dto) evenDto).updatedAt()));
             }
             event.setTimestamp(LocalDateTime.now());
             HeiAged24Months heiAged24Months = (event.getHeiAged24Months() == null) ? new HeiAged24Months() : event.getHeiAged24Months();
