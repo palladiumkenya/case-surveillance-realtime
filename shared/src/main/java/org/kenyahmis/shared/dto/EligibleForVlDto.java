@@ -33,7 +33,7 @@ public class EligibleForVlDto {
     @ValidTimestamp
     private String lastVlResultsDate;
     @Schema(name = "createdAt", example = "2023-11-10 00:00:00")
-    @NotNull
+//    @NotNull
     @ValidTimestamp
     private String createdAt;
     @Schema(name = "updatedAt", example = "2023-11-10 00:00:00")
