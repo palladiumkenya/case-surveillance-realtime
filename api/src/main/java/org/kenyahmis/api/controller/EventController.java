@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.kenyahmis.shared.constants.GlobalConstants.*;
@@ -123,7 +122,7 @@ public class EventController {
             String checksum = ChecksumUtils.generateChecksum(rawPayload);
             if (!cacheService.entryExists(checksum)) {
                 // validate entire payload
-//                validateRequest(eventList, mflCodes);
+                validateRequest(eventList, siteMetadata.mflCodes());
                 // produce message
                 eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
                 // add payload to cache
@@ -133,7 +132,7 @@ public class EventController {
             }
         } else {
             LOG.warn("Facility rate limiting is disabled");
-//            validateRequest(eventList, mflCodes);
+            validateRequest(eventList, siteMetadata.mflCodes());
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
             kafkaTemplate.send("reporting_manifest", new ManifestMessage(siteMetadata.mflCodes(), emrVendor, siteMetadata.emrVersion()));
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), siteMetadata.mflCodes(), emrVendor);
@@ -143,22 +142,22 @@ public class EventController {
     // returns mfl_codes, emrVersion
     private SiteMetadata extractMflCodes(EventList<EventBase<?>> eventList) {
         Set<String> mflSet = new HashSet<>();
-        AtomicReference<String> emrVersion = new AtomicReference<>();
-        eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
+        String emrVersion = null;
+        for (EventBase<?> eventBase: eventList) {
             Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
             if (map.get("mflCode") != null) {
                 mflSet.add(String.valueOf(map.get("mflCode")));
             }
             if (ROLL_CALL.equals(eventBase.getEventType())) {
                 Object emrVersionObject = map.get("emrVersion");
-                if (emrVersionObject!= null) {
-                    emrVersion.set(emrVersionObject.toString());
-                } else {
-                    emrVersion.set(null);
+                if (emrVersionObject != null) {
+                    emrVersion = emrVersionObject.toString();
                 }
             }
+        }
+        eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
         });
-        return new SiteMetadata(mflSet, emrVersion.get());
+        return new SiteMetadata(mflSet, emrVersion);
     }
 
     private void validateRequest(EventList<EventBase<?>> list, Set<String> mflCodes) {
@@ -179,17 +178,17 @@ public class EventController {
             }
         });
     }
-
-    private void validateEvent(Object object, Class<?> mapping, Set<String> mflCodes){
+    private void validateEvent(Object object, Class<?> mapping, Set<String> mflCodes) {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<Object>> violations = validator.validate(mapper.convertValue(object, mapping));
         if (!violations.isEmpty()) {
             Map<String, String> errors = new HashMap<>();
             violations.forEach(violation -> {
-                        errors.put(violation.getPropertyPath().toString() + " ("+ violation.getInvalidValue() +")", violation.getMessage());
+                        errors.put(violation.getPropertyPath().toString() + " (" + violation.getInvalidValue() + ")", violation.getMessage());
+                        LOG.error("Request validation failed: {} : {}", violation.getPropertyPath().toString(), violation.getMessage() );
                     }
             );
-            throw new RequestValidationException(errors, mflCodes);
+//            throw new RequestValidationException(errors, mflCodes);
         }
     }
 }
