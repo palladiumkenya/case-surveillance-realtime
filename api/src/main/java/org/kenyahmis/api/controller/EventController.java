@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.kenyahmis.shared.constants.GlobalConstants.*;
@@ -109,8 +110,8 @@ public class EventController {
         if (emrVendor == null) {
             LOG.warn("Records received from unconfirmed vendor");
         }
-        Set<String> mflCodes = extractMflCodes(eventList);
-        LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
+         SiteMetadata siteMetadata = extractMflCodes(eventList);
+        LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), siteMetadata.mflCodes(), emrVendor);
         // check if request fingerprint is in cache
         if (cacheService.rateLimitingEnabled()) {
             String rawPayload;
@@ -127,28 +128,37 @@ public class EventController {
                 eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
                 // add payload to cache
                 cacheService.addEntry(checksum, rawPayload);
-                kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflCodes, emrVendor));
-                LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
+                kafkaTemplate.send("reporting_manifest", new ManifestMessage(siteMetadata.mflCodes(), emrVendor, siteMetadata.emrVersion()));
+                LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), siteMetadata.mflCodes(), emrVendor);
             }
         } else {
             LOG.warn("Facility rate limiting is disabled");
 //            validateRequest(eventList, mflCodes);
             eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
-            kafkaTemplate.send("reporting_manifest", new ManifestMessage(mflCodes, emrVendor));
-            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), mflCodes, emrVendor);
+            kafkaTemplate.send("reporting_manifest", new ManifestMessage(siteMetadata.mflCodes(), emrVendor, siteMetadata.emrVersion()));
+            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), siteMetadata.mflCodes(), emrVendor);
         }
         return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
     }
-    // returns mfl_codes
-    private Set<String> extractMflCodes(EventList<EventBase<?>> eventList) {
+    // returns mfl_codes, emrVersion
+    private SiteMetadata extractMflCodes(EventList<EventBase<?>> eventList) {
         Set<String> mflSet = new HashSet<>();
+        AtomicReference<String> emrVersion = new AtomicReference<>();
         eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
             Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
             if (map.get("mflCode") != null) {
                 mflSet.add(String.valueOf(map.get("mflCode")));
             }
+            if (ROLL_CALL.equals(eventBase.getEventType())) {
+                Object emrVersionObject = map.get("emrVersion");
+                if (emrVersionObject!= null) {
+                    emrVersion.set(emrVersionObject.toString());
+                } else {
+                    emrVersion.set(null);
+                }
+            }
         });
-        return mflSet;
+        return new SiteMetadata(mflSet, emrVersion.get());
     }
 
     private void validateRequest(EventList<EventBase<?>> list, Set<String> mflCodes) {

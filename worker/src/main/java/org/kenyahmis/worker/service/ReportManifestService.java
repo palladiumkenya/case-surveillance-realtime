@@ -33,6 +33,7 @@ public class ReportManifestService {
                 ReportingManifest reportingManifest = new ReportingManifest();
                 reportingManifest.setReportDate(reportDate);
                 reportingManifest.setMflCode(mflCode);
+                reportingManifest.setEmrVersion(manifestMessage.getEmrVersion());
                 reportingManifestRepository.save(reportingManifest);
             }
         }

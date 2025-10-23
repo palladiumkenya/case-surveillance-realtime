@@ -12,4 +12,5 @@ import java.util.Set;
 public class ManifestMessage {
     private Set<String> mflCodes;
     private String vendorName;
+    private String emrVersion;
 }

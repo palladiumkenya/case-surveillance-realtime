@@ -13,5 +13,6 @@ public class ReportingManifest {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     private String mflCode;
+    private String emrVersion;
     private LocalDate reportDate;
 }
