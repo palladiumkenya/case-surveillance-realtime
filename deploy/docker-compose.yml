@@ -18,6 +18,7 @@ services:
       CS_REDIS_HOST: ${CS_REDIS_HOST}
       CS_REDIS_PORT: ${CS_REDIS_PORT}
       RATE_LIMITING_ENABLED: ${RATE_LIMITING_ENABLED:-true}
+      RATE_LIMITING_TTL: ${RATE_LIMITING_TTL:-24}
       TZ: Africa/Nairobi
   worker:
     build: ../worker/

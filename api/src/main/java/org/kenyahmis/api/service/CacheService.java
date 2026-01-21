@@ -11,13 +11,15 @@ public class CacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     @Value("${rate.limiting.enabled}")
     private String rateLimitingEnabled;
+    @Value("${rate.limiting.ttl}")
+    private String rateLimitTtl;
 
     public CacheService(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
     public void addEntry(String key, String value) {
-        redisTemplate.opsForValue().set(key, value, Duration.ofHours(10)); // TTL: 10 hours
+        redisTemplate.opsForValue().set(key, value, Duration.ofHours(Long.parseLong(rateLimitTtl))); // TTL: 10 hours
     }
 
     public boolean entryExists(String key) {

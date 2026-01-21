@@ -20,7 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import static org.kenyahmis.shared.constants.GlobalConstants.*;
@@ -34,6 +39,7 @@ public class EventService {
     private final EventMapper eventMapper;
     private final ClientMapper clientMapper;
     private final ObjectMapper mapper = new ObjectMapper();
+    private static  LocalDateTime PROGRAM_START_THRESHOLD = LocalDate.of(2025, 6, 1).atStartOfDay();
 
     public EventService(final EventRepository eventRepository, final ClientRepository clientRepository,
                         final EmrVendorRepository emrVendorRepository, final ClientMapper clientMapper, final EventMapper eventMapper) {
@@ -140,10 +146,27 @@ public class EventService {
         return vendorId;
     }
 
+    private Boolean isEarlierThanThreshHold(String eventCreatedDate, LocalDateTime threshold) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        Boolean isEarlier = null;
+        try {
+        LocalDateTime eventCreated =  LocalDateTime.parse(eventCreatedDate, formatter);
+        isEarlier = eventCreated.isBefore(threshold);
+        } catch (DateTimeException e) {
+           LOG.error("Failed to parse date", e);
+        }
+        return isEarlier;
+    }
     private void handleNewCaseEventUpload(EventBaseMessage<?> eventBaseMessage) {
         EventBase<?> eventBase = eventBaseMessage.getEventBase();
         ObjectMapper mapper = new ObjectMapper();
         NewCaseDto caseDto = mapper.convertValue(eventBase.getEvent(), NewCaseDto.class);
+        // filter new cases
+        Boolean isEarlier = isEarlierThanThreshHold(caseDto.getCreatedAt(), PROGRAM_START_THRESHOLD);
+        if (isEarlier != null && isEarlier) {
+            LOG.info("Skipping new case earlier than program start: {}", caseDto.getCreatedAt());
+            return;
+        }
         EventBase<NewCaseDto> newCaseEventBase = new EventBase<>(eventBase.getClient(), eventBase.getEventType(), caseDto);
         // validate
         validateEventBase(newCaseEventBase);
@@ -178,6 +201,12 @@ public class EventService {
         AtRiskPbfwDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), AtRiskPbfwDto.class);
         EventBase<AtRiskPbfwDto> atRiskPbfwDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
                 eventBaseMessage.getEventBase().getEventType(), eventDto);
+        // filter out old events
+        Boolean isEarlier = isEarlierThanThreshHold(eventDto.getCreatedAt(), PROGRAM_START_THRESHOLD);
+        if (isEarlier != null && isEarlier) {
+            LOG.info("Skipping pbfw earlier than program start: {}", eventDto.getCreatedAt());
+            return;
+        }
         // validate
         validateEventBase(atRiskPbfwDtoEventBase);
         String patientPk = atRiskPbfwDtoEventBase.getClient().getPatientPk(), mflCode = atRiskPbfwDtoEventBase.getEvent().getMflCode(),
@@ -213,6 +242,12 @@ public class EventService {
         PrepLinkedAtRiskPbfwDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), PrepLinkedAtRiskPbfwDto.class);
         EventBase<PrepLinkedAtRiskPbfwDto> prepLinkedAtRiskPbfwDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
                 eventBaseMessage.getEventBase().getEventType(), eventDto);
+        // filter out old events
+        Boolean isEarlier = isEarlierThanThreshHold(eventDto.getCreatedAt(), PROGRAM_START_THRESHOLD);
+        if (isEarlier != null && isEarlier) {
+            LOG.info("Skipping prep linked earlier than program start: {}", eventDto.getCreatedAt());
+            return;
+        }
         // validate
         validateEventBase(prepLinkedAtRiskPbfwDtoEventBase);
         String patientPk = prepLinkedAtRiskPbfwDtoEventBase.getClient().getPatientPk(),
@@ -249,6 +284,12 @@ public class EventService {
         EligibleForVlDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), EligibleForVlDto.class);
         EventBase<EligibleForVlDto> eligibleForVlDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
                 eventBaseMessage.getEventBase().getEventType(), eventDto);
+        // filter out old events
+        Boolean isEarlier = isEarlierThanThreshHold(eventDto.getVisitDate(), PROGRAM_START_THRESHOLD);
+        if (isEarlier != null && isEarlier) {
+            LOG.info("Skipping eligible for vl earlier than program start: {}", eventDto.getCreatedAt());
+            return;
+        }
         // validate
         validateEventBase(eligibleForVlDtoEventBase);
         String patientPk = eligibleForVlDtoEventBase.getClient().getPatientPk(),
@@ -286,6 +327,12 @@ public class EventService {
         UnsuppressedViralLoadDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), UnsuppressedViralLoadDto.class);
         EventBase<UnsuppressedViralLoadDto> unsuppressedViralLoadDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
                 eventBaseMessage.getEventBase().getEventType(), eventDto);
+        // filter out old events
+        Boolean isEarlier = isEarlierThanThreshHold(eventDto.createdAt(), PROGRAM_START_THRESHOLD);
+        if (isEarlier != null && isEarlier) {
+            LOG.info("Skipping pbfw earlier than program start: {}", eventDto.createdAt());
+            return;
+        }
         // validate
         validateEventBase(unsuppressedViralLoadDtoEventBase);
         String patientPk = unsuppressedViralLoadDtoEventBase.getClient().getPatientPk(),
