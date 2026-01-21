@@ -284,9 +284,14 @@ public class EventService {
         EventBase<EligibleForVlDto> eligibleForVlDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
                 eventBaseMessage.getEventBase().getEventType(), eventDto);
         // filter out old events
-        Boolean isEarlier = isEarlierThanThreshHold(eventDto.getVisitDate(), PROGRAM_START_THRESHOLD);
-        if (isEarlier != null && isEarlier) {
-            LOG.info("Skipping eligible for vl earlier than program start: {}", eventDto.getCreatedAt());
+        Boolean isVisitDateEarlier = isEarlierThanThreshHold(eventDto.getVisitDate(), PROGRAM_START_THRESHOLD);
+        Boolean isCreatedDateEarlier = isEarlierThanThreshHold(eventDto.getCreatedAt(), PROGRAM_START_THRESHOLD);
+        if (isVisitDateEarlier != null && isVisitDateEarlier) {
+            LOG.info("Skipping eligible for vl visitDate earlier than program start: {}", eventDto.getCreatedAt());
+            return;
+        }
+        if (isCreatedDateEarlier != null && isCreatedDateEarlier) {
+            LOG.info("Skipping eligible for vl createdAt earlier than program start: {}", eventDto.getCreatedAt());
             return;
         }
         // validate
