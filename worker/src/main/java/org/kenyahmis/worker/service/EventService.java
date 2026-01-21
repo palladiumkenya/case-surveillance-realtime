@@ -147,10 +147,9 @@ public class EventService {
     }
 
     private Boolean isEarlierThanThreshHold(String eventCreatedDate, LocalDateTime threshold) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Boolean isEarlier = null;
         try {
-        LocalDateTime eventCreated =  LocalDateTime.parse(eventCreatedDate, formatter);
+        LocalDateTime eventCreated =  FlexibleDateTimeParser.parse(eventCreatedDate);
         isEarlier = eventCreated.isBefore(threshold);
         } catch (DateTimeException e) {
            LOG.error("Failed to parse date", e);
