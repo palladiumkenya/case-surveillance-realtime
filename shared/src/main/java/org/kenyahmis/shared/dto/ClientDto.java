@@ -1,5 +1,6 @@
 package org.kenyahmis.shared.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +8,7 @@ import lombok.Data;
 import org.kenyahmis.shared.validator.ValidDate;
 import org.kenyahmis.shared.validator.ValidGender;
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(name = "Client", description = "Client demographics", implementation = ClientDto.class)
 @Data
 public class ClientDto {
