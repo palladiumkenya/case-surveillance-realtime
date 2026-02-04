@@ -148,6 +148,9 @@ public class EventService {
 
     private Boolean isEarlierThanThreshHold(String eventCreatedDate, LocalDateTime threshold) {
         Boolean isEarlier = null;
+        if (eventCreatedDate == null) {
+            return null;
+        }
         try {
         LocalDateTime eventCreated =  FlexibleDateTimeParser.parse(eventCreatedDate);
         isEarlier = eventCreated.isBefore(threshold);
