@@ -1,0 +1,1 @@
+ALTER TABLE public.client ADD COLUMN sha_number varchar(150) NULL;

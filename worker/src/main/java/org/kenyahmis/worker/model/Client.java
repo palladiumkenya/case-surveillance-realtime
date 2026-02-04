@@ -19,6 +19,7 @@ public class Client {
     @JsonManagedReference
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Event> events;
+    private String shaNumber;
     private String patientPk;
     private String sex;
     private String ward;

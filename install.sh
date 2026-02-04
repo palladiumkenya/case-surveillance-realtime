@@ -5,11 +5,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 PROJECT_1="$SCRIPT_DIR/shared"
 PROJECT_2="$SCRIPT_DIR/api"
+PROJECT_3="$SCRIPT_DIR/worker"
 DOCKER_DIR="$SCRIPT_DIR/deploy"
 
 echo "SCRIPT_DIR: [$SCRIPT_DIR]"
 echo "PROJECT_1: [$PROJECT_1]"
 echo "PROJECT_2: [$PROJECT_2]"
+echo "PROJECT_3: [$PROJECT_3]"
 build_project() {
   local dir="$1"
   echo "=============================="
@@ -21,7 +23,7 @@ build_project() {
 }
 build_project "$PROJECT_1"
 build_project "$PROJECT_2"
-build_project "$SCRIPT_DIR"
+build_project "$PROJECT_3"
 
 echo "🚀 Starting Docker containers from: $DOCKER_DIR"
 cd "$DOCKER_DIR"
