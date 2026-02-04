@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import org.apache.commons.lang3.StringUtils;
 import org.kenyahmis.shared.dto.*;
 import org.kenyahmis.shared.utils.FlexibleDateTimeParser;
 import org.kenyahmis.worker.exception.RequestValidationException;
@@ -148,14 +149,13 @@ public class EventService {
 
     private Boolean isEarlierThanThreshHold(String eventCreatedDate, LocalDateTime threshold) {
         Boolean isEarlier = null;
-        if (eventCreatedDate == null) {
-            return null;
-        }
-        try {
-        LocalDateTime eventCreated =  FlexibleDateTimeParser.parse(eventCreatedDate);
-        isEarlier = eventCreated.isBefore(threshold);
-        } catch (DateTimeException e) {
-           LOG.error("Failed to parse date", e);
+        if (!StringUtils.isEmpty(eventCreatedDate)) {
+            try {
+                LocalDateTime eventCreated =  FlexibleDateTimeParser.parse(eventCreatedDate);
+                isEarlier = eventCreated.isBefore(threshold);
+            } catch (DateTimeException e) {
+                LOG.error("Failed to parse date", e);
+            }
         }
         return isEarlier;
     }
