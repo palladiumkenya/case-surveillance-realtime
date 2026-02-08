@@ -6,6 +6,7 @@ import org.kenyahmis.worker.model.*;
 import org.kenyahmis.shared.utils.FlexibleDateTimeParser;
 import org.mapstruct.Mapper;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -78,7 +79,35 @@ public abstract class EventMapper {
             }
             prepLinkedAtRiskPbfw.setEvent(event);
             event.setPrepLinkedAtRiskPbfw(prepLinkedAtRiskPbfw);
-        } else if (evenDto instanceof EligibleForVlDto) {
+        } else if (evenDto instanceof PrepUptakeDto) {
+            event.setEventType(GlobalConstants.PREP_UPTAKE);
+            event.setMflCode( ((PrepUptakeDto) evenDto).mflCode());
+            if (((PrepUptakeDto) evenDto).createdAt() != null) {
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((PrepUptakeDto) evenDto).createdAt()));
+            }
+            if (((PrepUptakeDto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((PrepUptakeDto) evenDto).updatedAt()));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            PrepUptake prepUptake = (event.getPrepUptake() == null) ?
+                    new PrepUptake() : event.getPrepUptake();
+            prepUptake.setPrepNumber(((PrepUptakeDto) evenDto).prepNumber());
+            prepUptake.setPrepStatus(((PrepUptakeDto) evenDto).prepStatus());
+            prepUptake.setPrepType(((PrepUptakeDto) evenDto).prepType());
+            prepUptake.setPrepRegimen(((PrepUptakeDto) evenDto).prepRegimen());
+            prepUptake.setReasonForStartingPrep(((PrepUptakeDto) evenDto).reasonForStartingPrep());
+            prepUptake.setReasonForSwitchingPrep(((PrepUptakeDto) evenDto).reasonForSwitchingPrep());
+            prepUptake.setPregnancyStatus(((PrepUptakeDto) evenDto).pregnancyStatus());
+            prepUptake.setBreastfeedingStatus(((PrepUptakeDto) evenDto).breastfeedingStatus());
+            if (((PrepUptakeDto) evenDto).prepStartDate() !=  null) {
+                prepUptake.setPrepStartDate(FlexibleDateTimeParser.parse(((PrepUptakeDto) evenDto).prepStartDate()));
+            }
+            if (((PrepUptakeDto) evenDto).dateSwitchedPrep() !=  null) {
+                prepUptake.setDateSwitchedPrep(LocalDate.parse(((PrepUptakeDto) evenDto).dateSwitchedPrep()));
+            }
+            prepUptake.setEvent(event);
+            event.setPrepUptake(prepUptake);
+        }  else if (evenDto instanceof EligibleForVlDto) {
             event.setEventType(GlobalConstants.ELIGIBLE_FOR_VL);
             event.setMflCode( ((EligibleForVlDto) evenDto).getMflCode());
             if (((EligibleForVlDto) evenDto).getCreatedAt() != null) {

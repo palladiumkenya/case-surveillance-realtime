@@ -23,8 +23,6 @@ public class PrepLinkedAtRiskPbfwDto {
     @ValidTimestamp
     @NotNull
     private String prepStartDate;
-//    @NotBlank
     private String prepRegimen;
-//    @NotBlank
     private String prepNumber;
 }

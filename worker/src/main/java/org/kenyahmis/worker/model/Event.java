@@ -42,6 +42,9 @@ public class Event {
     private PrepLinkedAtRiskPbfw prepLinkedAtRiskPbfw;
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PrepUptake prepUptake;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private HeiWithoutPcr heiWithoutPcr;
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)

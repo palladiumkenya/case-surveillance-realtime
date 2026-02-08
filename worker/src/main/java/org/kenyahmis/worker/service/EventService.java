@@ -25,8 +25,6 @@ import org.springframework.stereotype.Service;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import static org.kenyahmis.shared.constants.GlobalConstants.*;
@@ -64,6 +62,8 @@ public class EventService {
                 handleAtRiskPbfwEventUpload(eventBaseMessage);
             } else if (PREP_LINKED_AT_RISK_PBFW.equals(eventBaseMessage.getEventBase().getEventType())) {
                 handlePrepLinkedAtRiskPbfwEventUpload(eventBaseMessage);
+            }else if (PREP_UPTAKE.equals(eventBaseMessage.getEventBase().getEventType())) {
+                handlePrepUptakeEventUpload(eventBaseMessage);
             } else if (ELIGIBLE_FOR_VL.equals(eventBaseMessage.getEventBase().getEventType())) {
                 handleEligibleForVlEventUpload(eventBaseMessage);
             } else if (UNSUPPRESSED_VIRAL_LOAD.equals(eventBaseMessage.getEventBase().getEventType())) {
@@ -256,6 +256,48 @@ public class EventService {
                 mflCode = prepLinkedAtRiskPbfwDtoEventBase.getEvent().getMflCode(),
                 eventType = prepLinkedAtRiskPbfwDtoEventBase.getEventType();
         LOG.debug("Received prep linked event pk: {}, mflCode: {}", patientPk, mflCode);
+        UUID vendorId = getVendorId(eventBaseMessage.getEmrVendor());
+        Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
+        if (opClient.isPresent()) {
+            // TODO Update client as well
+            Event event = opClient.get().getEvents()
+                    .stream()
+                    .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
+                            e.getEventType().equals(eventType))
+                    .findFirst().orElse(null);
+            event = eventMapper.eventDtoToEventModel(eventDto, event);
+            event.setClient(opClient.get());
+            event.setEmrVendorId(vendorId);
+            eventRepository.save(event);
+//            opClient.get().getEvents().add(event);
+//            clientRepository.save(opClient.get());
+        } else {
+            // create new client event
+            Client client = clientMapper.clientDtoToClientModel(eventBaseMessage.getEventBase().getClient());
+            Event event = eventMapper.eventDtoToEventModel(eventDto, null);
+            event.setClient(client);
+            event.setEmrVendorId(vendorId);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
+        }
+    }
+
+    private void handlePrepUptakeEventUpload(EventBaseMessage<?> eventBaseMessage) {
+        PrepUptakeDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), PrepUptakeDto.class);
+        EventBase<PrepUptakeDto> prepUptakeDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
+                eventBaseMessage.getEventBase().getEventType(), eventDto);
+        // filter out old events
+        Boolean isEarlier = isEarlierThanThreshHold(eventDto.createdAt(), PROGRAM_START_THRESHOLD);
+        if (isEarlier != null && isEarlier) {
+            LOG.info("Skipping prep uptake earlier than program start: {}", eventDto.createdAt());
+            return;
+        }
+        // validate
+        validateEventBase(prepUptakeDtoEventBase);
+        String patientPk = prepUptakeDtoEventBase.getClient().getPatientPk(),
+                mflCode = prepUptakeDtoEventBase.getEvent().mflCode(),
+                eventType = prepUptakeDtoEventBase.getEventType();
+        LOG.debug("Received prep uptake event pk: {}, mflCode: {}", patientPk, mflCode);
         UUID vendorId = getVendorId(eventBaseMessage.getEmrVendor());
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {

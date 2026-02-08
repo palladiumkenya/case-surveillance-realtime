@@ -167,6 +167,7 @@ public class EventController {
                 case LINKED_EVENT_TYPE -> validateEvent(eventBase.getEvent(), LinkedCaseDto.class, mflCodes);
                 case AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), AtRiskPbfwDto.class, mflCodes);
                 case PREP_LINKED_AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), PrepLinkedAtRiskPbfwDto.class, mflCodes);
+                case PREP_UPTAKE -> validateEvent(eventBase.getEvent(), PrepUptakeDto.class, mflCodes);
                 case ELIGIBLE_FOR_VL -> validateEvent(eventBase.getEvent(), EligibleForVlDto.class, mflCodes);
                 case UNSUPPRESSED_VIRAL_LOAD -> validateEvent(eventBase.getEvent(), UnsuppressedViralLoadDto.class, mflCodes);
                 case HEI_WITHOUT_PCR -> validateEvent(eventBase.getEvent(), HeiWithoutPcrDto.class, mflCodes);
@@ -188,7 +189,7 @@ public class EventController {
                         LOG.error("Request validation failed: {} : {}", violation.getPropertyPath().toString(), violation.getMessage() );
                     }
             );
-//            throw new RequestValidationException(errors, mflCodes);
+            throw new RequestValidationException(errors, mflCodes);
         }
     }
 }
