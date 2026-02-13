@@ -64,6 +64,8 @@ public class EventService {
                 handlePrepLinkedAtRiskPbfwEventUpload(eventBaseMessage);
             }else if (PREP_UPTAKE.equals(eventBaseMessage.getEventBase().getEventType())) {
                 handlePrepUptakeEventUpload(eventBaseMessage);
+            } else if (MORTALITY.equals(eventBaseMessage.getEventBase().getEventType())) {
+                 handleMortalityEventUpload(eventBaseMessage);
             } else if (ELIGIBLE_FOR_VL.equals(eventBaseMessage.getEventBase().getEventType())) {
                 handleEligibleForVlEventUpload(eventBaseMessage);
             } else if (UNSUPPRESSED_VIRAL_LOAD.equals(eventBaseMessage.getEventBase().getEventType())) {
@@ -298,6 +300,48 @@ public class EventService {
                 mflCode = prepUptakeDtoEventBase.getEvent().mflCode(),
                 eventType = prepUptakeDtoEventBase.getEventType();
         LOG.debug("Received prep uptake event pk: {}, mflCode: {}", patientPk, mflCode);
+        UUID vendorId = getVendorId(eventBaseMessage.getEmrVendor());
+        Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
+        if (opClient.isPresent()) {
+            // TODO Update client as well
+            Event event = opClient.get().getEvents()
+                    .stream()
+                    .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
+                            e.getEventType().equals(eventType))
+                    .findFirst().orElse(null);
+            event = eventMapper.eventDtoToEventModel(eventDto, event);
+            event.setClient(opClient.get());
+            event.setEmrVendorId(vendorId);
+            eventRepository.save(event);
+//            opClient.get().getEvents().add(event);
+//            clientRepository.save(opClient.get());
+        } else {
+            // create new client event
+            Client client = clientMapper.clientDtoToClientModel(eventBaseMessage.getEventBase().getClient());
+            Event event = eventMapper.eventDtoToEventModel(eventDto, null);
+            event.setClient(client);
+            event.setEmrVendorId(vendorId);
+            client.setEvents(List.of(event));
+            clientRepository.save(client);
+        }
+    }
+
+    private void handleMortalityEventUpload(EventBaseMessage<?> eventBaseMessage) {
+        MortalityDto eventDto = mapper.convertValue(eventBaseMessage.getEventBase().getEvent(), MortalityDto.class);
+        EventBase<MortalityDto> mortalityDtoEventBase = new EventBase<>(eventBaseMessage.getEventBase().getClient(),
+                eventBaseMessage.getEventBase().getEventType(), eventDto);
+        // filter out old events
+        Boolean isEarlier = isEarlierThanThreshHold(eventDto.createdAt(), PROGRAM_START_THRESHOLD);
+        if (isEarlier != null && isEarlier) {
+            LOG.info("Skipping mortality earlier than program start: {}", eventDto.createdAt());
+            return;
+        }
+        // validate
+        validateEventBase(mortalityDtoEventBase);
+        String patientPk = mortalityDtoEventBase.getClient().getPatientPk(),
+                mflCode = mortalityDtoEventBase.getEvent().mflCode(),
+                eventType = mortalityDtoEventBase.getEventType();
+        LOG.debug("Received mortality event pk: {}, mflCode: {}", patientPk, mflCode);
         UUID vendorId = getVendorId(eventBaseMessage.getEmrVendor());
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
         if (opClient.isPresent()) {
