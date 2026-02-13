@@ -12,5 +12,6 @@ public class GlobalConstants {
     public static final String HEI_AT_6_TO_8_WEEKS = "hei_at_6_to_8_weeks";
     public static final String HEI_AT_24_WEEKS = "hei_at_24_weeks";
     public static final String PREP_UPTAKE = "prep_uptake";
+    public static final String MORTALITY = "mortality";
     public static final String ROLL_CALL = "roll_call";
 }

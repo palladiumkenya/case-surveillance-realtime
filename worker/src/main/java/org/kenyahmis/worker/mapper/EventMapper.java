@@ -111,7 +111,26 @@ public abstract class EventMapper {
             }
             prepUptake.setEvent(event);
             event.setPrepUptake(prepUptake);
-        }  else if (evenDto instanceof EligibleForVlDto) {
+        } else if (evenDto instanceof MortalityDto) {
+            event.setEventType(GlobalConstants.MORTALITY);
+            event.setMflCode(((MortalityDto) evenDto).mflCode());
+            if (((MortalityDto) evenDto).createdAt() != null) {
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((MortalityDto) evenDto).createdAt()));
+            }
+            if (((MortalityDto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((MortalityDto) evenDto).updatedAt()));
+            }
+            event.setTimestamp(LocalDateTime.now());
+            Mortality mortality = (event.getMortality() == null) ?
+                    new Mortality() : event.getMortality();
+            mortality.setCauseOfDeath(((MortalityDto) evenDto).causeOfDeath());
+            if (((MortalityDto) evenDto).deathDate() !=  null) {
+                mortality.setDeathDate(FlexibleDateTimeParser.parse(((MortalityDto) evenDto).deathDate()));
+            }
+            mortality.setEvent(event);
+            event.setMortality(mortality);
+        }
+        else if (evenDto instanceof EligibleForVlDto) {
             event.setEventType(GlobalConstants.ELIGIBLE_FOR_VL);
             event.setMflCode( ((EligibleForVlDto) evenDto).getMflCode());
             if (((EligibleForVlDto) evenDto).getCreatedAt() != null) {

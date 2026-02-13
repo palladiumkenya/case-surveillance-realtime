@@ -99,6 +99,10 @@ public class EventController {
                                             value = "[{\"client\":{\"county\":\"Uasin Gishu\",\"subCounty\":\"Turbo\",\"ward\":\"Kiplombe\",\"patientPk\":\"977\",\"sex\":\"male\",\"dob\":\"2024-08-01\"},\"eventType\":\"hei_at_24_weeks\",\"event\":{\"mflCode\":\"33096\",\"createdAt\":\"2024-01-01 00:00:00\",\"heiId\":\"355\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
                                     ),
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Mortality",
+                                            value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"mortality\",\"event\":{\"updatedAt\":\"2026-02-02 15:45:07\",\"createdAt\":\"2026-02-02 15:45:07\",\"mflCode\":13077,\"causeOfDeath\":\"Neoplasm/cancer\",\"deathDate\":\"2026-01-02 15:45:07\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "Roll Call",
                                             value = "[{\"eventType\":\"roll_call\",\"event\":{\"mflCode\":\"1234\",\"emrVersion\":\"2.18\"}}]"
                                     )
@@ -178,6 +182,7 @@ public class EventController {
                 case HEI_WITHOUT_FINAL_OUTCOME -> validateEvent(eventBase.getEvent(), HeiWithoutFinalOutcomeDto.class, mflCodes);
                 case HEI_AT_6_TO_8_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged6To8Dto.class, mflCodes);
                 case HEI_AT_24_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged24Dto.class, mflCodes);
+                case MORTALITY -> validateEvent(eventBase.getEvent(), MortalityDto.class, mflCodes);
                 case ROLL_CALL -> validateEvent(eventBase.getEvent(), RollCallDto.class, mflCodes);
                 default -> LOG.warn("Unsupported event type: {}", eventBase.getEventType());
             }

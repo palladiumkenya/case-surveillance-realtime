@@ -14,7 +14,7 @@ public class ValidEventTypeValidator implements ConstraintValidator<ValidEventTy
         }
         List<String> eventTypes = List.of(GlobalConstants.LINKED_EVENT_TYPE, GlobalConstants.NEW_EVENT_TYPE, GlobalConstants.AT_RISK_PBFW, GlobalConstants.PREP_LINKED_AT_RISK_PBFW,
                 GlobalConstants.ELIGIBLE_FOR_VL, GlobalConstants.UNSUPPRESSED_VIRAL_LOAD, GlobalConstants.HEI_WITHOUT_PCR, GlobalConstants.HEI_WITHOUT_FINAL_OUTCOME, GlobalConstants.HEI_AT_6_TO_8_WEEKS,
-                GlobalConstants.HEI_AT_24_WEEKS,GlobalConstants.PREP_UPTAKE, GlobalConstants.ROLL_CALL);
+                GlobalConstants.HEI_AT_24_WEEKS,GlobalConstants.PREP_UPTAKE, GlobalConstants.MORTALITY, GlobalConstants.ROLL_CALL);
         return eventTypes.contains(value);
     }
 }

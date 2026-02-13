@@ -55,6 +55,9 @@ public class Event {
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private HeiAged24Months heiAged24Months;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Mortality mortality;
     @Column(name = "load_date")
     private LocalDateTime timestamp;
     private LocalDateTime createdAt;
