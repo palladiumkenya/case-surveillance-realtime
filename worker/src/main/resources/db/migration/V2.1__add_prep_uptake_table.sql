@@ -8,9 +8,11 @@ CREATE TABLE IF NOT EXISTS public.prep_uptake (
     prep_start_date timestamp NULL,
     reason_for_starting_prep TEXT NULL,
     reason_for_switching_prep TEXT NULL,
-    date_switched_prep TEXT NULL,
-    pregnancy_status VARCHAR(100) NULL,
-    breastfeeding_status VARCHAR(100) NULL,
+    prep_discontinuation_reason TEXT NULL,
+    date_discontinued_from_prep date NULL,
+    date_switched_prep date NULL,
+    is_pregnant VARCHAR(15) NULL,
+    is_breastfeeding VARCHAR(15) NULL,
     CONSTRAINT prep_uptake_pkey PRIMARY KEY (id)
     );
 ALTER TABLE public.prep_uptake DROP CONSTRAINT IF EXISTS fk_prep_uptake_event_id;

@@ -97,13 +97,17 @@ public abstract class EventMapper {
             prepUptake.setPrepRegimen(((PrepUptakeDto) evenDto).prepRegimen());
             prepUptake.setReasonForStartingPrep(((PrepUptakeDto) evenDto).reasonForStartingPrep());
             prepUptake.setReasonForSwitchingPrep(((PrepUptakeDto) evenDto).reasonForSwitchingPrep());
-            prepUptake.setPregnancyStatus(((PrepUptakeDto) evenDto).pregnancyStatus());
-            prepUptake.setBreastfeedingStatus(((PrepUptakeDto) evenDto).breastfeedingStatus());
+            prepUptake.setPrepDiscontinuationReason(((PrepUptakeDto) evenDto).prepDiscontinuationReason());
+            prepUptake.setIsPregnant(((PrepUptakeDto) evenDto).isPregnant());
+            prepUptake.setIsBreastfeeding(((PrepUptakeDto) evenDto).isBreastfeeding());
             if (((PrepUptakeDto) evenDto).prepStartDate() !=  null) {
                 prepUptake.setPrepStartDate(FlexibleDateTimeParser.parse(((PrepUptakeDto) evenDto).prepStartDate()));
             }
             if (((PrepUptakeDto) evenDto).dateSwitchedPrep() !=  null) {
                 prepUptake.setDateSwitchedPrep(LocalDate.parse(((PrepUptakeDto) evenDto).dateSwitchedPrep()));
+            }
+            if (((PrepUptakeDto) evenDto).dateDiscontinuedFromPrep() !=  null) {
+                prepUptake.setDateDiscontinuedFromPrep(LocalDate.parse(((PrepUptakeDto) evenDto).dateDiscontinuedFromPrep()));
             }
             prepUptake.setEvent(event);
             event.setPrepUptake(prepUptake);

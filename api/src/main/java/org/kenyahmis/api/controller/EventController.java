@@ -40,7 +40,7 @@ public class EventController {
     private final CacheService cacheService;
     private final ObjectMapper mapper;
 
-    public EventController(KafkaTemplate kafkaTemplate, CacheService cacheService, ObjectMapper mapper) {
+    public EventController(KafkaTemplate<String, Object> kafkaTemplate, CacheService cacheService, ObjectMapper mapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.cacheService = cacheService;
         this.mapper = mapper;
@@ -65,6 +65,10 @@ public class EventController {
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "At Risk PBFW Case",
                                             value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"at_risk_pbfw\",\"event\":{\"mflCode\":\"1234\",\"createdAt\":\"2024-01-01 00:00:00\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Prep Uptake",
+                                            value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"prep_uptake\",\"event\":{\"createdAt\":\"2026-02-02 15:45:07\",\"prepStatus\":\"switch\",\"prepType\":\"DAPIVIRINE\",\"isPregnant\":\"Yes\",\"isBreastfeeding\":\"No\",\"dosingStrategy\":\"LONG ACTING PREP\",\"reasonForSwitchingPrep\":\"Number of instances of stock outs of key tracer drugs in the last month\",\"mflCode\":13077,\"prepStartDate\":\"2026-02-02 15:43:18\",\"reasonForStartingPrep\":\"Recurrent use of PEP\",\"dateSwitchedPrep\":\"2026-02-02\",\"dateDiscontinuedFromPrep\":\"2026-02-02\",\"updatedAt\":null,\"prepNumber\":\"13077202609099\",\"prepRegimen\":\"TDF/FTC\"}}]"
                                     ),
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "Prep Linked At Risk PBFW Case",

@@ -24,7 +24,9 @@ public class PrepUptake {
     private LocalDateTime prepStartDate;
     private String reasonForStartingPrep;
     private String reasonForSwitchingPrep;
+    private LocalDate dateDiscontinuedFromPrep;
+    private String prepDiscontinuationReason;
     private LocalDate dateSwitchedPrep;
-    private String pregnancyStatus;
-    private String breastfeedingStatus;
+    private String isPregnant;
+    private String isBreastfeeding;
 }
