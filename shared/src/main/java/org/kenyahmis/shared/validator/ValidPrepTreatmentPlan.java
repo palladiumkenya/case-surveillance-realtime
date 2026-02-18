@@ -10,12 +10,12 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Constraint(validatedBy = ValidPrepStatusValidator.class)
+@Constraint(validatedBy = ValidPrepTreatmentPlanValidator.class)
 @Target({ TYPE, FIELD, ANNOTATION_TYPE })
 @Retention(RUNTIME)
 @Documented
-public @interface ValidPrepStatus {
-    String message() default "Invalid PrEP status. The value can be start, continue, restart, switch, discontinue";
+public @interface ValidPrepTreatmentPlan {
+    String message() default "Invalid PrEP treatment plan. The value can be start, continue, restart, switch, discontinue";
     Class <?> [] groups() default {};
     Class <? extends Payload> [] payload() default {};
 }

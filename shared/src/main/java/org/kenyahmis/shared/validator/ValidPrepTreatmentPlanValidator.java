@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.util.List;
 
-public class ValidPrepStatusValidator implements ConstraintValidator<ValidPrepStatus, String> {
+public class ValidPrepTreatmentPlanValidator implements ConstraintValidator<ValidPrepTreatmentPlan, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {

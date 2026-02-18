@@ -12,10 +12,10 @@ public record PrepUptakeDto(
         String mflCode,
         @NotBlank(message = "prepNumber cannot be blank")
         String prepNumber,
-        @Schema(name = "prepStatus", description = "Describes the phase of PrEP use", example = "start, continue, restart, switch, discontinue")
-        @NotNull(message = "prepStatus field cannot be null")
-        @ValidPrepStatus
-        String prepStatus,
+        @Schema(name = "prepTreatmentPlan", description = "Describes the phase of PrEP use", example = "start, continue, restart, switch, discontinue")
+        @NotNull(message = "prepTreatmentPlan field cannot be null")
+        @ValidPrepTreatmentPlan
+        String prepTreatmentPlan,
         String prepType,
         @Schema(name = "prepRegimen", example = "TDF/FTC, TDF/3TC, TAF/FTC" )
         @ValidPrepRegimen

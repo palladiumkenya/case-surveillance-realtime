@@ -8,7 +8,6 @@ import org.mapstruct.Mapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Mapper(componentModel = "spring")
 public abstract class EventMapper {
@@ -92,7 +91,7 @@ public abstract class EventMapper {
             PrepUptake prepUptake = (event.getPrepUptake() == null) ?
                     new PrepUptake() : event.getPrepUptake();
             prepUptake.setPrepNumber(((PrepUptakeDto) evenDto).prepNumber());
-            prepUptake.setPrepStatus(((PrepUptakeDto) evenDto).prepStatus());
+            prepUptake.setPrepTreatmentPlan(((PrepUptakeDto) evenDto).prepTreatmentPlan());
             prepUptake.setPrepType(((PrepUptakeDto) evenDto).prepType());
             prepUptake.setDosingStrategy(((PrepUptakeDto)evenDto).dosingStrategy());
             prepUptake.setPrepRegimen(((PrepUptakeDto) evenDto).prepRegimen());
