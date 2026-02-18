@@ -21,6 +21,7 @@ public class PrepUptake {
     private String prepStatus;
     private String prepType;
     private String prepRegimen;
+    private String dosingStrategy;
     private LocalDateTime prepStartDate;
     private String reasonForStartingPrep;
     private String reasonForSwitchingPrep;

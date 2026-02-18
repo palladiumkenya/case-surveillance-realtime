@@ -94,6 +94,7 @@ public abstract class EventMapper {
             prepUptake.setPrepNumber(((PrepUptakeDto) evenDto).prepNumber());
             prepUptake.setPrepStatus(((PrepUptakeDto) evenDto).prepStatus());
             prepUptake.setPrepType(((PrepUptakeDto) evenDto).prepType());
+            prepUptake.setDosingStrategy(((PrepUptakeDto)evenDto).dosingStrategy());
             prepUptake.setPrepRegimen(((PrepUptakeDto) evenDto).prepRegimen());
             prepUptake.setReasonForStartingPrep(((PrepUptakeDto) evenDto).reasonForStartingPrep());
             prepUptake.setReasonForSwitchingPrep(((PrepUptakeDto) evenDto).reasonForSwitchingPrep());
