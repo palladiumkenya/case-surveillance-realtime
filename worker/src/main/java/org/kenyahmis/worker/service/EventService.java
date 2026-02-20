@@ -299,6 +299,9 @@ public class EventService {
         String patientPk = prepUptakeDtoEventBase.getClient().getPatientPk(),
                 mflCode = prepUptakeDtoEventBase.getEvent().mflCode(),
                 eventType = prepUptakeDtoEventBase.getEventType();
+        LocalDateTime createdAt = FlexibleDateTimeParser.parse(prepUptakeDtoEventBase.getEvent().createdAt());
+
+
         LOG.debug("Received prep uptake event pk: {}, mflCode: {}", patientPk, mflCode);
         UUID vendorId = getVendorId(eventBaseMessage.getEmrVendor());
         Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
@@ -307,7 +310,7 @@ public class EventService {
             Event event = opClient.get().getEvents()
                     .stream()
                     .filter(e -> e.getMflCode().equals(mflCode) && e.getClient().getPatientPk().equals(patientPk) &&
-                            e.getEventType().equals(eventType))
+                            e.getCreatedAt().equals(createdAt) && e.getEventType().equals(eventType))
                     .findFirst().orElse(null);
             event = eventMapper.eventDtoToEventModel(eventDto, event);
             event.setClient(opClient.get());
