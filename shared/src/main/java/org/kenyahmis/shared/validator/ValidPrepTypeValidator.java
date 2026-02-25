@@ -11,7 +11,7 @@ public class ValidPrepTypeValidator implements ConstraintValidator<ValidPrepType
         if (value == null) {
             return true;
         }
-        List<String> response = List.of("ORAL", "CAB-LA", "DAPIVIRINE RING", "LENACAPAVIR");
+        List<String> response = List.of("ORAL", "CAB-LA", "DAPIVIRINE RING", "LENACAPAVIR", "UNDOCUMENTED");
         return response.contains(value.toUpperCase());
     }
 }

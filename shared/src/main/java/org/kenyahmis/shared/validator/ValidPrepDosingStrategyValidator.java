@@ -11,7 +11,7 @@ public class ValidPrepDosingStrategyValidator implements ConstraintValidator<Val
         if (value == null) {
             return true;
         }
-        List<String> response = List.of("EVENT DRIVEN", "DAILY ORAL PREP", "LONG ACTING PREP");
+        List<String> response = List.of("EVENT DRIVEN", "DAILY ORAL PREP", "LONG ACTING PREP", "UNDOCUMENTED");
         return response.contains(value.toUpperCase());
     }
 }

@@ -11,7 +11,7 @@ public class ValidPrepTreatmentPlanValidator implements ConstraintValidator<Vali
         if (value == null) {
             return true;
         }
-        List<String> response = List.of("START", "CONTINUE", "RESTART", "SWITCH", "DISCONTINUE");
+        List<String> response = List.of("START", "CONTINUE", "RESTART", "SWITCH", "DISCONTINUE", "UNDOCUMENTED");
         return response.contains(value.toUpperCase());
     }
 }

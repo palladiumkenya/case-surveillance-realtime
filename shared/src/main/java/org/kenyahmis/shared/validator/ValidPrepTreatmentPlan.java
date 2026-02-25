@@ -15,7 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface ValidPrepTreatmentPlan {
-    String message() default "Invalid PrEP treatment plan. The value can be start, continue, restart, switch, discontinue";
+    String message() default "Invalid PrEP treatment plan. The value can be start, continue, restart, switch, discontinue, undocumented";
     Class <?> [] groups() default {};
     Class <? extends Payload> [] payload() default {};
 }

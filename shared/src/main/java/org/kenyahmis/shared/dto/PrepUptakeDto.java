@@ -16,6 +16,7 @@ public record PrepUptakeDto(
         @NotNull(message = "prepTreatmentPlan field cannot be null")
         @ValidPrepTreatmentPlan
         String prepTreatmentPlan,
+        @ValidPrepType
         String prepType,
         @Schema(name = "prepRegimen", example = "TDF/FTC, TDF/3TC, TAF/FTC" )
         @ValidPrepRegimen

@@ -12,7 +12,7 @@ public class ValidPrepRegimenValidator implements ConstraintValidator<ValidPrepR
         if (value == null) {
             return true;
         }
-        List<String> response = List.of("TDF/FTC", "TDF/3TC", "TAF/FTC");
+        List<String> response = List.of("TDF/FTC", "TDF/3TC", "TAF/FTC", "UNDOCUMENTED");
         return response.contains(value.toUpperCase());
     }
 }

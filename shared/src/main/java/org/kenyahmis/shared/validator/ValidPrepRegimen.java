@@ -15,7 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface ValidPrepRegimen {
-    String message() default "Invalid PrEP regimen. The value can be TDF/FTC, TDF/3TC, TAF/FTC";
+    String message() default "Invalid PrEP regimen. The value can be TDF/FTC, TDF/3TC, TAF/FTC, UNDOCUMENTED";
     Class <?> [] groups() default {};
     Class <? extends Payload> [] payload() default {};
 }
