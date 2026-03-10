@@ -13,22 +13,22 @@ public record PrepUptakeDto(
         @NotBlank(message = "prepNumber cannot be blank")
         String prepNumber,
         @Schema(name = "prepTreatmentPlan", description = "Describes the phase of PrEP use", example = "start, continue, restart, switch, discontinue")
-        @NotNull(message = "prepTreatmentPlan field cannot be null")
-        @ValidPrepTreatmentPlan
+//        @NotNull(message = "prepTreatmentPlan field cannot be null")
+//        @ValidPrepTreatmentPlan
         String prepTreatmentPlan,
-        @ValidPrepType
+//        @ValidPrepType
         String prepType,
         @Schema(name = "prepRegimen", example = "TDF/FTC, TDF/3TC, TAF/FTC" )
-        @ValidPrepRegimen
+//        @ValidPrepRegimen
         String prepRegimen,
         @Schema(name = "dosingStrategy", example = "EVENT DRIVEN, DAILY ORAL PREP,LONG ACTING PREP")
-        @ValidPrepDosingStrategy
+//        @ValidPrepDosingStrategy
         String dosingStrategy,
         @Schema(name = "prepStartDate", example = "2023-11-10 00:00:00")
         @NotNull
         @ValidTimestamp
         String prepStartDate,
-        @NotBlank(message = "reasonForStartingPrep field cannot be blank or null")
+//        @NotBlank(message = "reasonForStartingPrep field cannot be blank or null")
         String reasonForStartingPrep,
         String reasonForSwitchingPrep,
         @ValidTimestamp
@@ -36,11 +36,11 @@ public record PrepUptakeDto(
         String prepDiscontinuationReason,
         @ValidDate
         String dateSwitchedPrep,
-        @ValidYesNoResponse(message = "Invalid isPregnant status. Use either Yes, No")
+//        @ValidYesNoResponse(message = "Invalid isPregnant status. Use either Yes, No")
         @Schema(name = "isPregnant", example = "Yes")
         String isPregnant,
         @Schema(name = "isBreastfeeding", example = "No")
-        @ValidYesNoResponse(message = "Invalid isBreastFeeding status. Use either Yes, No")
+//        @ValidYesNoResponse(message = "Invalid isBreastFeeding status. Use either Yes, No")
         String isBreastfeeding,
         @NotNull
         @ValidTimestamp
