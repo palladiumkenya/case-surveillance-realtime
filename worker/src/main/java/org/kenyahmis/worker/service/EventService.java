@@ -157,6 +157,7 @@ public class EventService {
         event.setEmrVendorId(vendorId);
 
         if (existingEvent != null) {
+            // TODO update client as well
             eventRepository.save(event);
         } else {
             Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
