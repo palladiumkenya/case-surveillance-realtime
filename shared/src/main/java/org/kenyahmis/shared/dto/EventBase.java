@@ -26,7 +26,7 @@ public class EventBase<T> {
     @Valid
     @NotNull
     @Schema(description = "Event details being transmitted", anyOf = {LinkedCaseDto.class, NewCaseDto.class,
-            PrepLinkedAtRiskPbfwDto.class, AtRiskPbfwDto.class, EligibleForVlDto.class, UnsuppressedViralLoadDto.class,
+            PrepLinkedAtRiskPbfwDto.class, PrepUptakeDto.class, AtRiskPbfwDto.class, EligibleForVlDto.class, UnsuppressedViralLoadDto.class,
             HeiWithoutPcrDto.class, HeiWithoutFinalOutcomeDto.class, HeiAged6To8Dto.class, HeiAged24Dto.class, RollCallDto.class})
     private T event;
 

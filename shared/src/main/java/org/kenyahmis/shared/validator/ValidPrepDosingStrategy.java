@@ -15,7 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface ValidPrepDosingStrategy {
-    String message() default "Invalid PrEP dosing strategy. The value can be EVENT DRIVEN, DAILY ORAL PREP,LONG ACTING PREP";
+    String message() default "Invalid PrEP dosing strategy. The value can be EVENT DRIVEN, DAILY ORAL PREP,LONG ACTING PREP, UNDOCUMENTED";
     Class <?> [] groups() default {};
     Class <? extends Payload> [] payload() default {};
 }

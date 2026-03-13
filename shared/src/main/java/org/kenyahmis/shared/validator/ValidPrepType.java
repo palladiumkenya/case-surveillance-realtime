@@ -15,7 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface ValidPrepType {
-    String message() default "Invalid PrEP type. The value can be ORAL, CAB-LA, DAPIVIRINE RING, LENACAPAVIR";
+    String message() default "Invalid PrEP type. The value can be ORAL, CAB-LA, DAPIVIRINE RING, LENACAPAVIR, UNDOCUMENTED";
     Class <?> [] groups() default {};
     Class <? extends Payload> [] payload() default {};
 }

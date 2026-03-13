@@ -18,9 +18,10 @@ public class PrepUptake {
     @OneToOne
     private Event event;
     private String prepNumber;
-    private String prepStatus;
+    private String prepTreatmentPlan;
     private String prepType;
     private String prepRegimen;
+    private String dosingStrategy;
     private LocalDateTime prepStartDate;
     private String reasonForStartingPrep;
     private String reasonForSwitchingPrep;
