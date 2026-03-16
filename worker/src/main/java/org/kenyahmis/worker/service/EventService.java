@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -70,20 +71,20 @@ public class EventService {
     private void processEvent(EventBaseMessage<?> msg) {
         String eventType = msg.getEventBase().getEventType();
         switch (eventType) {
-            case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt);
-            case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, null);
-            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt);
-            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt);
-            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt);
-            case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt);
+            case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt, true);
+            case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, LinkedCaseDto::getCreatedAt, false);
+            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true);
+            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true);
+            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true);
+            case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true);
             case ELIGIBLE_FOR_VL -> handleEligibleForVlEventUpload(msg);
-            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt);
-            case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, null);
-            case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, null);
-            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, null);
+            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true);
+            case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false);
+            case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false);
+            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, false);
             case HEI_AT_24_WEEKS -> {
                 msg.getEventBase().setEventType(HEI_AT_6_TO_8_WEEKS);
-                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, null);
+                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, false);
             }
             case ROLL_CALL -> LOG.info("Received roll_call event, ignore");
             default -> LOG.warn("Event Type: {} not handled", eventType);
@@ -92,12 +93,13 @@ public class EventService {
 
     private <T> void handleEventUpload(EventBaseMessage<?> msg, Class<T> dtoClass,
                                         Function<T, String> mflCodeExtractor,
-                                        Function<T, String> createdAtExtractor) {
+                                        Function<T, String> createdAtExtractor, Boolean threshHoldValidate) {
         T eventDto = mapper.convertValue(msg.getEventBase().getEvent(), dtoClass);
 
+        String createdAt = createdAtExtractor.apply(eventDto);
         // Filter events earlier than program start
-        if (createdAtExtractor != null) {
-            if (Boolean.TRUE.equals(isEarlierThanThreshold(createdAtExtractor.apply(eventDto), PROGRAM_START_THRESHOLD))) {
+        if (threshHoldValidate) {
+            if (Boolean.TRUE.equals(isEarlierThanThreshold(createdAt, PROGRAM_START_THRESHOLD))) {
                 LOG.info("Skipping {} earlier than program start", msg.getEventBase().getEventType());
                 return;
             }
@@ -113,10 +115,11 @@ public class EventService {
         LOG.debug("Received {} event pk: {}, mflCode: {}", eventType, patientPk, mflCode);
 
         UUID vendorId = getVendorId(msg.getEmrVendor());
-        Event existingEvent = eventRepository.findByClient_PatientPkAndMflCodeAndEventType(patientPk, mflCode, eventType)
+        String recordId = generateUniqueEventId(patientPk, mflCode, eventType, createdAt);
+        Event existingEvent = eventRepository.findByEventUniqueId(recordId)
                 .orElse(null);
 
-        upsertEvent(msg, eventDto, patientPk, mflCode, vendorId, existingEvent);
+        upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);
     }
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
@@ -139,20 +142,21 @@ public class EventService {
         String patientPk = eventBase.getClient().getPatientPk();
         String mflCode = eventDto.getMflCode();
         String eventType = eventBase.getEventType();
-        LocalDateTime visitDate = FlexibleDateTimeParser.parse(eventDto.getVisitDate());
+        String visitDate = eventDto.getVisitDate();
         LOG.debug("Received eligible for VL event pk: {}, mflCode: {}", patientPk, mflCode);
 
         UUID vendorId = getVendorId(msg.getEmrVendor());
         // EligibleForVl deduplicates by visitDate in addition to patientPk + mflCode + eventType
+        String recordId = generateUniqueEventId(patientPk, mflCode, eventType, visitDate);
         Event existingEvent = eventRepository
-                .findByClient_PatientPkAndMflCodeAndEventTypeAndEligibleForVl_VisitDate(patientPk, mflCode, eventType, visitDate)
+                .findByEventUniqueId(recordId)
                 .orElse(null);
 
-        upsertEvent(msg, eventDto, patientPk, mflCode, vendorId, existingEvent);
+        upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);
     }
 
     private void upsertEvent(EventBaseMessage<?> msg, Object eventDto, String patientPk,
-                              String mflCode, UUID vendorId, Event existingEvent) {
+                              String mflCode, String recordId, UUID vendorId, Event existingEvent) {
         Event event = eventMapper.eventDtoToEventModel(eventDto, existingEvent);
         event.setEmrVendorId(vendorId);
 
@@ -160,6 +164,7 @@ public class EventService {
             // TODO update client as well
             eventRepository.save(event);
         } else {
+            event.setEventUniqueId(recordId);
             Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
             if (opClient.isPresent()) {
                 Client client = opClient.get();
@@ -170,6 +175,7 @@ public class EventService {
             } else {
                 Client client = clientMapper.clientDtoToClientModel(msg.getEventBase().getClient());
                 event.setClient(client);
+                client.setMflCode(mflCode);
                 client.setEvents(List.of(event));
                 clientRepository.save(client);
             }
@@ -215,5 +221,9 @@ public class EventService {
             LOG.error("Failed to parse date", e);
             return null;
         }
+    }
+
+    private String generateUniqueEventId(String ... elements) {
+        return DigestUtils.md5DigestAsHex(String.join("", elements).getBytes());
     }
 }

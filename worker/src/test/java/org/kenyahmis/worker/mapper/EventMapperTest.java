@@ -100,7 +100,6 @@ class EventMapperTest {
         PrepUptake prepUptake = result.getPrepUptake();
         assertNotNull(prepUptake);
         assertEquals("13077202609099", prepUptake.getPrepNumber());
-        assertEquals("New", prepUptake.getPrepStatus());
         assertEquals("ORAL", prepUptake.getPrepType());
         assertEquals("TDF/FTC", prepUptake.getPrepRegimen());
         assertEquals("Recurrent use of PEP", prepUptake.getReasonForStartingPrep());

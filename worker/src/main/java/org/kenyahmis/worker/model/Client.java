@@ -21,6 +21,7 @@ public class Client {
     private List<Event> events;
     private String shaNumber;
     private String patientPk;
+    private String mflCode;
     private String sex;
     private String ward;
     private String county;
