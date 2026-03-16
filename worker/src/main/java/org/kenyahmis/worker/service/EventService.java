@@ -116,7 +116,7 @@ public class EventService {
 
         UUID vendorId = getVendorId(msg.getEmrVendor());
         String recordId = generateUniqueEventId(patientPk, mflCode, eventType, createdAt);
-        Event existingEvent = eventRepository.findByEventUniqueId(recordId)
+        Event existingEvent = eventRepository.findByClient_PatientPkAndMflCodeAndEventType(patientPk, mflCode, eventType)
                 .orElse(null);
 
         upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);
@@ -143,13 +143,15 @@ public class EventService {
         String mflCode = eventDto.getMflCode();
         String eventType = eventBase.getEventType();
         String visitDate = eventDto.getVisitDate();
+        LocalDateTime visitDateTime = FlexibleDateTimeParser.parse(visitDate);
         LOG.debug("Received eligible for VL event pk: {}, mflCode: {}", patientPk, mflCode);
 
         UUID vendorId = getVendorId(msg.getEmrVendor());
         // EligibleForVl deduplicates by visitDate in addition to patientPk + mflCode + eventType
         String recordId = generateUniqueEventId(patientPk, mflCode, eventType, visitDate);
         Event existingEvent = eventRepository
-                .findByEventUniqueId(recordId)
+                .findByClient_PatientPkAndMflCodeAndEventTypeAndEligibleForVl_VisitDate(patientPk, mflCode, eventType,
+                        visitDateTime)
                 .orElse(null);
 
         upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);

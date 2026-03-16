@@ -1,11 +1,12 @@
 package org.kenyahmis.worker.repository;
 
+import jakarta.transaction.Transactional;
 import org.kenyahmis.worker.model.Client;
 import org.kenyahmis.worker.model.Event;
-import org.kenyahmis.worker.model.EventMigrationDto;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,9 +18,39 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     Optional<Event> findByClient_PatientPkAndMflCodeAndEventTypeAndEligibleForVl_VisitDate(
             String patientPk, String mflCode, String eventType, LocalDateTime visitDate);
     Optional<Event> findByEventUniqueId(String eventUniqueId);
-//    List<Event> findByEventUniqueIdIsNull(Pageable pageable);
     List<Event> findByClient(Client client);
-    @Query("select new org.kenyahmis.worker.model.EventMigrationDto(e, c.patientPk) from Event e" +
-            " left join Client  c on c.id = e.client.id")
-    List<EventMigrationDto> findByEventUniqueIdIsNull(Pageable pageable);
+    @Transactional
+    @Modifying
+    @Query(value = """
+            UPDATE event e
+            SET event_unique_id = md5(concat(
+                c.patient_pk,
+                e.mfl_code,
+                e.event_type,
+                COALESCE(to_char(e.created_at, 'YYYY-MM-DD HH24:MI:SS'), '')
+            ))
+            FROM client c
+            WHERE e.event_unique_id IS NULL
+            AND e.client_id = c.id
+            AND e.event_type != 'eligible_for_vl'
+            """, nativeQuery = true)
+    int backfillNonVlEventUniqueId();
+
+    @Transactional
+    @Modifying
+    @Query(value = """
+            UPDATE event e
+            SET event_unique_id = md5(concat(
+                c.patient_pk,
+                e.mfl_code,
+                e.event_type,
+                COALESCE(to_char(vl.visit_date, 'YYYY-MM-DD HH24:MI:SS'), '')
+            ))
+            FROM client c, eligible_for_vl vl
+            WHERE e.event_unique_id IS NULL
+            AND e.client_id = c.id
+            AND e.event_type = 'eligible_for_vl'
+            AND vl.event_id = e.id
+            """, nativeQuery = true)
+    int backfillVlEventUniqueId();
 }

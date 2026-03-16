@@ -10,11 +10,13 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @SpringBootApplication
+@EnableAsync
 public class WorkerApplication {
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
