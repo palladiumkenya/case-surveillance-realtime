@@ -112,6 +112,7 @@
         <module>worker</module>
         <module>api</module>
         <module>shared</module>
+        <module>admin</module>
     </modules>
 
 </project>

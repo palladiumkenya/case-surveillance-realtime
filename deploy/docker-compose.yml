@@ -1,6 +1,15 @@
 version: '3.5'
 
 services:
+  admin-server:
+    build: ../admin/
+    ports:
+      - "${ADMIN_SERVER_PORT:-8066}:8088"
+    environment:
+      TZ: Africa/Nairobi
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
   api:
     build: ../api/
     image: kenyahmis/cs-api:latest
@@ -19,7 +28,12 @@ services:
       CS_REDIS_PORT: ${CS_REDIS_PORT}
       RATE_LIMITING_ENABLED: ${RATE_LIMITING_ENABLED:-true}
       RATE_LIMITING_TTL: ${RATE_LIMITING_TTL:-24}
+      SPRING_BOOT_ADMIN_CLIENT_URL: ${ADMIN_SERVER_URL}
       TZ: Africa/Nairobi
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ACTUATOR_USERNAME: ${ACTUATOR_USERNAME}
+      ACTUATOR_PASSWORD: ${ACTUATOR_PASSWORD}
   worker:
     build: ../worker/
     image: kenyahmis/cs-worker:latest
@@ -31,7 +45,12 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      SPRING_BOOT_ADMIN_CLIENT_URL: ${ADMIN_SERVER_URL}
       TZ: Africa/Nairobi
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ACTUATOR_USERNAME: ${ACTUATOR_USERNAME}
+      ACTUATOR_PASSWORD: ${ACTUATOR_PASSWORD}
   cs_redis:
     image: redis:7
     restart: unless-stopped
