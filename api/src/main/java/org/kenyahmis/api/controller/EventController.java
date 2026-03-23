@@ -103,6 +103,14 @@ public class EventController {
                                             value = "[{\"client\":{\"county\":\"Nairobi\",\"subCounty\":\"Langata\",\"ward\":\"Langata\",\"patientPk\":\"505\",\"sex\":\"male\",\"dob\":\"1997-01-01\"},\"eventType\":\"mortality\",\"event\":{\"updatedAt\":\"2026-02-02 15:45:07\",\"createdAt\":\"2026-02-02 15:45:07\",\"mflCode\":13077,\"causeOfDeath\":\"Neoplasm/cancer\",\"deathDate\":\"2026-01-02 15:45:07\"}}]"
                                     ),
                                     @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Add Missed VL Opportunity",
+                                            value = "[{\"client\":{\"county\":\"Mombasa\",\"subCounty\":\"Mvita\",\"ward\":\"Mvita\",\"patientPk\":\"56634\",\"sex\":\"female\",\"dob\":\"2000-01-01\"},\"eventType\":\"missed_vl_opportunities\",\"event\":{\"mflCode\":\"33107\",\"missedVlFlag\":true,\"visitDate\":\"2025-11-01 00:00:00\",\"createdAt\":\"2025-11-01 00:00:00\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Unsuppressed Vl Without Eac Within 2Weeks",
+                                            value = "[{\"client\":{\"county\":\"Mombasa\",\"subCounty\":\"Mvita\",\"ward\":\"Mvita\",\"patientPk\":\"56634\",\"sex\":\"female\",\"dob\":\"2000-01-01\"},\"eventType\":\"unsuppressed_vl_without_eac_within_2_weeks\",\"event\":{\"mflCode\":\"33107\",\"missedEacFlag\":true,\"date14DaysPostHvl\":\"2025-11-01 00:00:00\",\"createdAt\":\"2025-11-01 00:00:00\",\"updatedAt\":\"2024-01-01 00:00:00\"}}]"
+                                    ),
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
                                             name = "Roll Call",
                                             value = "[{\"eventType\":\"roll_call\",\"event\":{\"mflCode\":\"1234\",\"emrVersion\":\"2.18\"}}]"
                                     )
@@ -183,6 +191,8 @@ public class EventController {
                 case HEI_AT_6_TO_8_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged6To8Dto.class, mflCodes);
                 case HEI_AT_24_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged24Dto.class, mflCodes);
                 case MORTALITY -> validateEvent(eventBase.getEvent(), MortalityDto.class, mflCodes);
+                case MISSED_VL_OPPORTUNITIES -> validateEvent(eventBase.getEvent(), MissedVlOpportunitiesDto.class, mflCodes);
+                case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> validateEvent(eventBase.getEvent(), UnsuppressedVlWithoutEacWithin2WeeksDto.class, mflCodes);
                 case ROLL_CALL -> validateEvent(eventBase.getEvent(), RollCallDto.class, mflCodes);
                 default -> LOG.warn("Unsupported event type: {}", eventBase.getEventType());
             }

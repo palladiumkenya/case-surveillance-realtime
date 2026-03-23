@@ -16,7 +16,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 public @interface ValidEventType {
     String message() default "Invalid Event type. The type can be: linked_case, new_case, at_risk_pbfw," +
-            " prep_linked_at_risk_pbfw, eligible_for_vl, unsuppressed_viral_load, prep_uptake, mortality, roll_call";
+            " prep_linked_at_risk_pbfw, eligible_for_vl, unsuppressed_viral_load, prep_uptake,hei_without_pcr," +
+            "hei_without_final_outcome,  mortality," +
+            " missed_vl_opportunities, unsuppressed_vl_without_eac_within_2_weeks, roll_call";
     Class <?> [] groups() default {};
     Class <? extends Payload> [] payload() default {};
 }
