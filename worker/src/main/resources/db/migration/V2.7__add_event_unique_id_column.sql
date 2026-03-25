@@ -1,0 +1,1 @@
+ALTER TABLE public.event ADD COLUMN event_unique_id VARCHAR(255) NULL;
