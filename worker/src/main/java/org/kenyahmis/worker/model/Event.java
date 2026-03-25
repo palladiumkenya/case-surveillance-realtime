@@ -59,6 +59,12 @@ public class Event {
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private Mortality mortality;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UnsuppressedVlWithoutEacWithin2Weeks unsuppressedVlWithoutEacWithin2Weeks;
+    @JsonManagedReference
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private MissedVlOpportunities missedVlOpportunities;
     @Column(name = "load_date")
     private LocalDateTime timestamp;
     private LocalDateTime createdAt;

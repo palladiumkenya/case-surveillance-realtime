@@ -163,6 +163,42 @@ public abstract class EventMapper {
             eligibleForVl.setEvent(event);
             event.setEligibleForVl(eligibleForVl);
 
+        } else if (evenDto instanceof MissedVlOpportunitiesDto) {
+            event.setEventType(GlobalConstants.MISSED_VL_OPPORTUNITIES);
+            event.setMflCode( ((MissedVlOpportunitiesDto) evenDto).mflCode());
+            if (((MissedVlOpportunitiesDto) evenDto).createdAt() != null) {
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((MissedVlOpportunitiesDto) evenDto).createdAt()));
+            }
+            if (((MissedVlOpportunitiesDto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((MissedVlOpportunitiesDto) evenDto).updatedAt()));
+            }
+            MissedVlOpportunities missedVlOpportunities = (event.getMissedVlOpportunities() == null) ?
+                    new MissedVlOpportunities() : event.getMissedVlOpportunities();
+            if (((MissedVlOpportunitiesDto) evenDto).visitDate() !=  null) {
+                missedVlOpportunities.setVisitDate(FlexibleDateTimeParser.parse(((MissedVlOpportunitiesDto) evenDto).visitDate()));
+            }
+            missedVlOpportunities.setMissedVlFlag(((MissedVlOpportunitiesDto) evenDto).missedVlFlag());
+            event.setTimestamp(LocalDateTime.now());
+            missedVlOpportunities.setEvent(event);
+            event.setMissedVlOpportunities(missedVlOpportunities);
+        } else if (evenDto instanceof UnsuppressedVlWithoutEacWithin2WeeksDto) {
+            event.setEventType(GlobalConstants.UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS);
+            event.setMflCode( ((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).mflCode());
+            if (((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).createdAt() != null) {
+                event.setCreatedAt(FlexibleDateTimeParser.parse(((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).createdAt()));
+            }
+            if (((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).updatedAt() != null) {
+                event.setUpdatedAt(FlexibleDateTimeParser.parse(((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).updatedAt()));
+            }
+            UnsuppressedVlWithoutEacWithin2Weeks unsuppressedVlWithoutEacWithin2Weeks = (event.getUnsuppressedVlWithoutEacWithin2Weeks() == null) ?
+                    new UnsuppressedVlWithoutEacWithin2Weeks() : event.getUnsuppressedVlWithoutEacWithin2Weeks();
+            if (((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).date14DaysPostHvl() !=  null) {
+                unsuppressedVlWithoutEacWithin2Weeks.setDate14DaysPostHvl(FlexibleDateTimeParser.parse(((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).date14DaysPostHvl()));
+            }
+            unsuppressedVlWithoutEacWithin2Weeks.setMissedEacFlag(((UnsuppressedVlWithoutEacWithin2WeeksDto) evenDto).missedEacFlag());
+            event.setTimestamp(LocalDateTime.now());
+            unsuppressedVlWithoutEacWithin2Weeks.setEvent(event);
+            event.setUnsuppressedVlWithoutEacWithin2Weeks(unsuppressedVlWithoutEacWithin2Weeks);
         } else if (evenDto instanceof UnsuppressedViralLoadDto) {
             event.setEventType(GlobalConstants.UNSUPPRESSED_VIRAL_LOAD);
             event.setMflCode( ((UnsuppressedViralLoadDto) evenDto).mflCode());
