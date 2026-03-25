@@ -79,6 +79,8 @@ public class EventService {
             case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true);
             case ELIGIBLE_FOR_VL -> handleEligibleForVlEventUpload(msg);
             case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true);
+            case MISSED_VL_OPPORTUNITIES -> handleEventUpload(msg, MissedVlOpportunitiesDto.class, MissedVlOpportunitiesDto::mflCode, MissedVlOpportunitiesDto::createdAt, true);
+            case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> handleEventUpload(msg, UnsuppressedVlWithoutEacWithin2WeeksDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto::mflCode, UnsuppressedVlWithoutEacWithin2WeeksDto::createdAt, true);
             case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false);
             case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false);
             case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, false);
