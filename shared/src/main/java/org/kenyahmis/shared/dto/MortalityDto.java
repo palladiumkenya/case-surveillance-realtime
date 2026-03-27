@@ -8,7 +8,6 @@ import org.kenyahmis.shared.validator.ValidTimestamp;
 @Schema(name = "Mortality")
 public record MortalityDto(
         @Schema(name = "causeOfDeath")
-        @NotBlank
         String causeOfDeath,
         @NotNull
         @ValidTimestamp
