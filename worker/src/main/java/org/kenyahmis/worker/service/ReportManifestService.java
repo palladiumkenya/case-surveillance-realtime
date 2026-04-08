@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -35,6 +36,14 @@ public class ReportManifestService {
                 reportingManifest.setMflCode(mflCode);
                 reportingManifest.setEmrVersion(manifestMessage.getEmrVersion());
                 reportingManifestRepository.save(reportingManifest);
+            } else {
+                if(StringUtils.hasLength(manifestMessage.getEmrVersion())) {
+                    ReportingManifest existingManifest = optionalReportingManifest.get();
+                    if (!StringUtils.hasLength(existingManifest.getEmrVersion())) {
+                        existingManifest.setEmrVersion(manifestMessage.getEmrVersion());
+                        reportingManifestRepository.save(existingManifest);
+                    }
+                }
             }
         }
     }

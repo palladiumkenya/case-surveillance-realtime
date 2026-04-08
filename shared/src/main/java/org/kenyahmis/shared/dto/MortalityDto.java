@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import org.kenyahmis.shared.validator.ValidTimestamp;
 
 @Schema(name = "Mortality")
-public record MortalityDto(
+public record MortalityDto (
         @Schema(name = "causeOfDeath")
         String causeOfDeath,
         @NotNull

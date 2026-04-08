@@ -171,8 +171,6 @@ public class EventController {
                 }
             }
         }
-        eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
-        });
         return new SiteMetadata(mflSet, emrVersion);
     }
 
