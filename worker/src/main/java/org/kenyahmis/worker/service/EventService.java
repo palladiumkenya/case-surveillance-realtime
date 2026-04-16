@@ -83,10 +83,10 @@ public class EventService {
             case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> handleEventUpload(msg, UnsuppressedVlWithoutEacWithin2WeeksDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto::mflCode, UnsuppressedVlWithoutEacWithin2WeeksDto::createdAt, true);
             case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false);
             case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false);
-            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, false);
+            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true);
             case HEI_AT_24_WEEKS -> {
                 msg.getEventBase().setEventType(HEI_AT_6_TO_8_WEEKS);
-                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, false);
+                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true);
             }
             case ROLL_CALL -> LOG.info("Received roll_call event, ignore");
             default -> LOG.warn("Event Type: {} not handled", eventType);
@@ -102,7 +102,7 @@ public class EventService {
         // Filter events earlier than program start
         if (threshHoldValidate) {
             if (Boolean.TRUE.equals(isEarlierThanThreshold(createdAt, PROGRAM_START_THRESHOLD))) {
-                LOG.info("Skipping {} earlier than program start", msg.getEventBase().getEventType());
+//                LOG.info("Skipping {} earlier than program start", msg.getEventBase().getEventType());
                 return;
             }
         }
@@ -126,14 +126,15 @@ public class EventService {
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
         EligibleForVlDto eventDto = mapper.convertValue(msg.getEventBase().getEvent(), EligibleForVlDto.class);
+        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
 
         // EligibleForVl checks both visitDate and createdAt thresholds
-        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), PROGRAM_START_THRESHOLD))) {
-            LOG.info("Skipping eligible for vl visitDate earlier than program start: {}", eventDto.getVisitDate());
+        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), START_THRESHOLD))) {
+//            LOG.info("Skipping eligible for vl visitDate earlier than program start: {}", eventDto.getVisitDate());
             return;
         }
-        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getCreatedAt(), PROGRAM_START_THRESHOLD))) {
-            LOG.info("Skipping eligible for vl createdAt earlier than program start: {}", eventDto.getCreatedAt());
+        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getCreatedAt(), START_THRESHOLD))) {
+//            LOG.info("Skipping eligible for vl createdAt earlier than program start: {}", eventDto.getCreatedAt());
             return;
         }
 
