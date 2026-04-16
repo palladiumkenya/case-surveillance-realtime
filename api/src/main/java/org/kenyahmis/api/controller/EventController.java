@@ -140,7 +140,13 @@ public class EventController {
                 // validate entire payload
                 validateRequest(eventList, siteMetadata.mflCodes());
                 // produce message
-                eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
+
+                eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
+                    // Temporary stop gap for viral load datasets
+                    if (!UNSUPPRESSED_VIRAL_LOAD.equals(eventBase.getEventType()) && !ELIGIBLE_FOR_VL.equals(eventBase.getEventType())){
+                        kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
+                    }
+                } );
                 // add payload to cache
                 cacheService.addEntry(checksum, rawPayload);
                 kafkaTemplate.send("reporting_manifest", new ManifestMessage(siteMetadata.mflCodes(), emrVendor, siteMetadata.emrVersion()));

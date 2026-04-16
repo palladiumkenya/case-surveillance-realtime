@@ -35,7 +35,7 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 @Service
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
-    private static final LocalDateTime PROGRAM_START_THRESHOLD = LocalDate.of(2025, 6, 1).atStartOfDay();
+    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 2, 1).atStartOfDay();
 
     private final EventRepository eventRepository;
     private final ClientRepository clientRepository;
@@ -101,7 +101,7 @@ public class EventService {
         String createdAt = createdAtExtractor.apply(eventDto);
         // Filter events earlier than program start
         if (threshHoldValidate) {
-            if (Boolean.TRUE.equals(isEarlierThanThreshold(createdAt, PROGRAM_START_THRESHOLD))) {
+            if (Boolean.TRUE.equals(isEarlierThanThreshold(createdAt, GLOBAL_START_THRESHOLD))) {
 //                LOG.info("Skipping {} earlier than program start", msg.getEventBase().getEventType());
                 return;
             }
@@ -126,7 +126,7 @@ public class EventService {
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
         EligibleForVlDto eventDto = mapper.convertValue(msg.getEventBase().getEvent(), EligibleForVlDto.class);
-        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
+        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 2, 1).atStartOfDay();
 
         // EligibleForVl checks both visitDate and createdAt thresholds
         if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), START_THRESHOLD))) {
