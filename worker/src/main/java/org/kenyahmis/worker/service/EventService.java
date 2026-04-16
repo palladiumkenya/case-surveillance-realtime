@@ -126,7 +126,7 @@ public class EventService {
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
         EligibleForVlDto eventDto = mapper.convertValue(msg.getEventBase().getEvent(), EligibleForVlDto.class);
-        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 2, 1).atStartOfDay();
+        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 4, 1).atStartOfDay();
 
         // EligibleForVl checks both visitDate and createdAt thresholds
         if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), START_THRESHOLD))) {
