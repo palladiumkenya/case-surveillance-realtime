@@ -14,7 +14,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EventRepository extends JpaRepository<Event, UUID> {
+    @Deprecated
     Optional<Event> findByClient_PatientPkAndMflCodeAndEventType(String patientPk, String mflCode, String eventType);
+    @Deprecated
     Optional<Event> findByClient_PatientPkAndMflCodeAndEventTypeAndEligibleForVl_VisitDate(
             String patientPk, String mflCode, String eventType, LocalDateTime visitDate);
     Optional<Event> findByEventUniqueId(String eventUniqueId);

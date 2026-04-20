@@ -35,7 +35,7 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 @Service
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
-    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 2, 1).atStartOfDay();
+    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
 
     private final EventRepository eventRepository;
     private final ClientRepository clientRepository;
@@ -118,7 +118,7 @@ public class EventService {
 
         UUID vendorId = getVendorId(msg.getEmrVendor());
         String recordId = generateUniqueEventId(patientPk, mflCode, eventType, createdAt);
-        Event existingEvent = eventRepository.findByClient_PatientPkAndMflCodeAndEventType(patientPk, mflCode, eventType)
+        Event existingEvent = eventRepository.findByEventUniqueId(recordId)
                 .orElse(null);
 
         upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);
@@ -153,8 +153,7 @@ public class EventService {
         // EligibleForVl deduplicates by visitDate in addition to patientPk + mflCode + eventType
         String recordId = generateUniqueEventId(patientPk, mflCode, eventType, visitDate);
         Event existingEvent = eventRepository
-                .findByClient_PatientPkAndMflCodeAndEventTypeAndEligibleForVl_VisitDate(patientPk, mflCode, eventType,
-                        visitDateTime)
+                .findByEventUniqueId(recordId)
                 .orElse(null);
 
         upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);
@@ -170,7 +169,7 @@ public class EventService {
             eventRepository.save(event);
         } else {
             event.setEventUniqueId(recordId);
-            Optional<Client> opClient = clientRepository.findByPatientPkAndSiteCode(patientPk, mflCode);
+            Optional<Client> opClient = clientRepository.findByPatientPkAndMflCode(patientPk, mflCode);
             if (opClient.isPresent()) {
                 Client client = opClient.get();
                 ClientDto clientDto = msg.getEventBase().getClient();

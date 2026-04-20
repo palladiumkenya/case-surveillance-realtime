@@ -11,9 +11,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ClientRepository extends JpaRepository<Client, UUID> {
+    @Deprecated
     @Query("select c from Client c left join Event e on e.client = c" +
             " where c.patientPk = ?1 and e.mflCode = ?2")
     Optional<Client> findByPatientPkAndSiteCode(String patientPk, String mflCode);
+
+    Optional<Client> findByPatientPkAndMflCode(String patientPk, String mflCode);
 
     @Transactional
     @Modifying

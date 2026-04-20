@@ -143,9 +143,9 @@ public class EventController {
 
                 eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
                     // Temporary stop gap for viral load datasets
-                    if (!UNSUPPRESSED_VIRAL_LOAD.equals(eventBase.getEventType()) && !ELIGIBLE_FOR_VL.equals(eventBase.getEventType())){
+//                    if (!UNSUPPRESSED_VIRAL_LOAD.equals(eventBase.getEventType()) && !ELIGIBLE_FOR_VL.equals(eventBase.getEventType())){
                         kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
-                    }
+//                    }
                 } );
                 // add payload to cache
                 cacheService.addEntry(checksum, rawPayload);
