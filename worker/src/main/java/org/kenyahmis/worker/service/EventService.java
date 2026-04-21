@@ -118,10 +118,11 @@ public class EventService {
 
         UUID vendorId = getVendorId(msg.getEmrVendor());
         String recordId = generateUniqueEventId(patientPk, mflCode, eventType, createdAt);
+        String hashInputs = joinHashInputs(patientPk, mflCode, eventType, createdAt);
         Event existingEvent = eventRepository.findByEventUniqueId(recordId)
                 .orElse(null);
 
-        upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);
+        upsertEvent(msg, eventDto, patientPk, mflCode, recordId, hashInputs, vendorId, existingEvent);
     }
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
@@ -152,17 +153,19 @@ public class EventService {
         UUID vendorId = getVendorId(msg.getEmrVendor());
         // EligibleForVl deduplicates by visitDate in addition to patientPk + mflCode + eventType
         String recordId = generateUniqueEventId(patientPk, mflCode, eventType, visitDate);
+        String hashInputs = joinHashInputs(patientPk, mflCode, eventType, visitDate);
         Event existingEvent = eventRepository
                 .findByEventUniqueId(recordId)
                 .orElse(null);
 
-        upsertEvent(msg, eventDto, patientPk, mflCode, recordId, vendorId, existingEvent);
+        upsertEvent(msg, eventDto, patientPk, mflCode, recordId, hashInputs, vendorId, existingEvent);
     }
 
     private void upsertEvent(EventBaseMessage<?> msg, Object eventDto, String patientPk,
-                              String mflCode, String recordId, UUID vendorId, Event existingEvent) {
+                              String mflCode, String recordId, String hashInputs, UUID vendorId, Event existingEvent) {
         Event event = eventMapper.eventDtoToEventModel(eventDto, existingEvent);
         event.setEmrVendorId(vendorId);
+        event.setHashInputs(hashInputs);
 
         if (existingEvent != null) {
             // TODO update client as well
@@ -229,5 +232,9 @@ public class EventService {
 
     private String generateUniqueEventId(String ... elements) {
         return DigestUtils.md5DigestAsHex(String.join("", elements).getBytes());
+    }
+
+    private String joinHashInputs(String ... elements) {
+        return String.join("|", elements);
     }
 }

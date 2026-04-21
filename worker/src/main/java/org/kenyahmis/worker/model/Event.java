@@ -18,6 +18,7 @@ public class Event {
     private String eventType;
     private String mflCode;
     private String eventUniqueId;
+    private String hashInputs;
     @JoinColumn(name = "emrVendorId", referencedColumnName = "id")
     private UUID emrVendorId;
     @JsonBackReference
