@@ -67,6 +67,15 @@ public class ApiApplication {
     }
 
     @Bean
+    public NewTopic uploadMetricsTopic() {
+        return TopicBuilder.name("upload_metrics")
+                .partitions(3)
+                .replicas(1)
+                .config("retention.ms", String.valueOf(Duration.ofDays(3).toMillis()))
+                .build();
+    }
+
+    @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(

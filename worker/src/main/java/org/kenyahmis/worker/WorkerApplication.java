@@ -2,6 +2,7 @@ package org.kenyahmis.worker;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,7 +31,7 @@ public class WorkerApplication {
         ConcurrentKafkaListenerContainerFactory<Integer, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(eventsConsumerFactory());
         factory.setBatchListener(true);
-        factory.setConcurrency(3);
+        factory.setConcurrency(2);
         return factory;
     }
 
@@ -57,7 +58,7 @@ public class WorkerApplication {
         ConcurrentKafkaListenerContainerFactory<Integer, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(manifestConsumerFactory());
         factory.setBatchListener(true);
-        factory.setConcurrency(3);
+        factory.setConcurrency(1);
         return factory;
     }
 
@@ -77,5 +78,30 @@ public class WorkerApplication {
         return props;
     }
 
+    // Upload Metrics Consumer configs
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> uploadMetricsKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(uploadMetricsConsumerFactory());
+        factory.setBatchListener(true);
+        factory.setConcurrency(3);
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, String> uploadMetricsConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(uploadMetricsConsumerConfigs());
+    }
+
+    @Bean
+    public Map<String, Object> uploadMetricsConsumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TYPE_MAPPINGS, "uploadMetricsMessage:org.kenyahmis.shared.dto.UploadMetricsMessage");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return props;
+    }
 
 }

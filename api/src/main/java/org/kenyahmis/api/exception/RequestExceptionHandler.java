@@ -60,4 +60,11 @@ public class RequestExceptionHandler extends ResponseEntityExceptionHandler {
         LOG.info("Handling validation error");
         return new ResponseEntity<>(new APIErrorResponse<>(ex.getMessage(), "Invalid Request"), HttpStatus.BAD_REQUEST) ;
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    protected ResponseEntity<APIErrorResponse<?>> handleException(IllegalStateException ex) {
+        LOG.error("Unexpected server error", ex);
+        return new ResponseEntity<>(new APIErrorResponse<>(ex.getMessage(), "Internal Server Error"),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
