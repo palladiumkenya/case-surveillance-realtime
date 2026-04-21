@@ -24,26 +24,28 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.kenyahmis.shared.constants.GlobalConstants.*;
 
 @RestController
 @RequestMapping("/api/event")
 public class EventController {
-    private final static Logger LOG = LoggerFactory.getLogger(EventController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventController.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final CacheService cacheService;
     private final ObjectMapper mapper;
+    private final Validator validator;
 
     public EventController(KafkaTemplate<String, Object> kafkaTemplate, CacheService cacheService, ObjectMapper mapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.cacheService = cacheService;
         this.mapper = mapper;
+        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
     @Operation(
@@ -120,99 +122,128 @@ public class EventController {
     )
     @PutMapping(value = "sync")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList, @AuthenticationPrincipal Jwt jwt) {
-        String emrVendor =  jwt.getClaimAsString("emr");
+    private ResponseEntity<APIResponse> createEvent(@RequestBody @Valid EventList<EventBase<?>> eventList,
+                                                    @AuthenticationPrincipal Jwt jwt) {
+        String emrVendor = jwt.getClaimAsString("emr");
         if (emrVendor == null) {
             LOG.warn("Records received from unconfirmed vendor");
         }
-         SiteMetadata siteMetadata = extractMflCodes(eventList);
-        LOG.info("Received {} records from sites {}, vendor {}", eventList.size(), siteMetadata.mflCodes(), emrVendor);
-        // check if request fingerprint is in cache
-        if (cacheService.rateLimitingEnabled()) {
-            String rawPayload;
+
+        boolean duplicate = false;
+        String checksum = null;
+        String rawPayload = null;
+        boolean rateLimitingEnabled = cacheService.rateLimitingEnabled();
+
+        if (rateLimitingEnabled) {
             try {
                 rawPayload = mapper.writeValueAsString(eventList);
             } catch (JsonProcessingException je) {
-                throw new RuntimeException("Failed to parse payload");
+                throw new IllegalStateException("Failed to serialize payload for checksum", je);
             }
-            String checksum = ChecksumUtils.generateChecksum(rawPayload);
-            if (!cacheService.entryExists(checksum)) {
-                // validate entire payload
-                validateRequest(eventList, siteMetadata.mflCodes());
-                // produce message
-
-                eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> {
-                    // Temporary stop gap for viral load datasets
-//                    if (!UNSUPPRESSED_VIRAL_LOAD.equals(eventBase.getEventType()) && !ELIGIBLE_FOR_VL.equals(eventBase.getEventType())){
-                        kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
-//                    }
-                } );
-                // add payload to cache
-                cacheService.addEntry(checksum, rawPayload);
-                kafkaTemplate.send("reporting_manifest", new ManifestMessage(siteMetadata.mflCodes(), emrVendor, siteMetadata.emrVersion()));
-                LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), siteMetadata.mflCodes(), emrVendor);
-            }
+            checksum = ChecksumUtils.generateChecksum(rawPayload);
+            duplicate = cacheService.entryExists(checksum);
         } else {
             LOG.warn("Facility rate limiting is disabled");
-            validateRequest(eventList, siteMetadata.mflCodes());
-            eventList.forEach((Consumer<? super EventBase<?>>) eventBase -> kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor)));
-            kafkaTemplate.send("reporting_manifest", new ManifestMessage(siteMetadata.mflCodes(), emrVendor, siteMetadata.emrVersion()));
-            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), siteMetadata.mflCodes(), emrVendor);
         }
-        return new ResponseEntity<>(new APIResponse("Successfully added client events"),  HttpStatus.ACCEPTED);
-    }
-    // returns mfl_codes, emrVersion
-    private SiteMetadata extractMflCodes(EventList<EventBase<?>> eventList) {
-        Set<String> mflSet = new HashSet<>();
-        String emrVersion = null;
-        for (EventBase<?> eventBase: eventList) {
-            Map<String, Object> map = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
-            if (map.get("mflCode") != null) {
-                mflSet.add(String.valueOf(map.get("mflCode")));
+
+        BatchContext ctx = processBatch(eventList, !duplicate);
+        LOG.info("Received {} records from sites {}, vendor {}, duplicate={}",
+                eventList.size(), ctx.mflCodes, emrVendor, duplicate);
+
+        if (!duplicate) {
+            for (EventBase<?> eventBase : eventList) {
+                kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
             }
-            if (ROLL_CALL.equals(eventBase.getEventType())) {
-                Object emrVersionObject = map.get("emrVersion");
+            if (rateLimitingEnabled) {
+                cacheService.addEntry(checksum, rawPayload);
+            }
+            kafkaTemplate.send("reporting_manifest", new ManifestMessage(ctx.mflCodes, emrVendor, ctx.emrVersion));
+            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), ctx.mflCodes, emrVendor);
+        }
+
+        Instant uploadedAt = Instant.now();
+        ctx.metrics.forEach((key, count) ->
+                kafkaTemplate.send("upload_metrics", key.siteCode,
+                        new UploadMetricsMessage(key.siteCode, key.eventType, count, uploadedAt)));
+
+        return new ResponseEntity<>(new APIResponse("Successfully added client events"), HttpStatus.ACCEPTED);
+    }
+
+    private BatchContext processBatch(EventList<EventBase<?>> eventList, boolean validate) {
+        Set<String> mflCodes = new HashSet<>();
+        Map<MetricKey, Long> metrics = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
+        String emrVersion = null;
+
+        for (EventBase<?> eventBase : eventList) {
+            String eventType = eventBase.getEventType();
+            Map<String, Object> eventMap = mapper.convertValue(eventBase.getEvent(), new TypeReference<>() {});
+
+            String siteCode = null;
+            Object mflObj = eventMap.get("mflCode");
+            if (mflObj != null) {
+                siteCode = String.valueOf(mflObj);
+                mflCodes.add(siteCode);
+            }
+            if (ROLL_CALL.equals(eventType)) {
+                Object emrVersionObject = eventMap.get("emrVersion");
                 if (emrVersionObject != null) {
                     emrVersion = emrVersionObject.toString();
                 }
             }
-        }
-        return new SiteMetadata(mflSet, emrVersion);
-    }
 
-    private void validateRequest(EventList<EventBase<?>> list, Set<String> mflCodes) {
-        list.forEach((Consumer<? super EventBase<?>>) eventBase -> {
-            switch (eventBase.getEventType()){
-                case NEW_EVENT_TYPE -> validateEvent(eventBase.getEvent(), NewCaseDto.class, mflCodes);
-                case LINKED_EVENT_TYPE -> validateEvent(eventBase.getEvent(), LinkedCaseDto.class, mflCodes);
-                case AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), AtRiskPbfwDto.class, mflCodes);
-                case PREP_LINKED_AT_RISK_PBFW -> validateEvent(eventBase.getEvent(), PrepLinkedAtRiskPbfwDto.class, mflCodes);
-                case PREP_UPTAKE -> validateEvent(eventBase.getEvent(), PrepUptakeDto.class, mflCodes);
-                case ELIGIBLE_FOR_VL -> validateEvent(eventBase.getEvent(), EligibleForVlDto.class, mflCodes);
-                case UNSUPPRESSED_VIRAL_LOAD -> validateEvent(eventBase.getEvent(), UnsuppressedViralLoadDto.class, mflCodes);
-                case HEI_WITHOUT_PCR -> validateEvent(eventBase.getEvent(), HeiWithoutPcrDto.class, mflCodes);
-                case HEI_WITHOUT_FINAL_OUTCOME -> validateEvent(eventBase.getEvent(), HeiWithoutFinalOutcomeDto.class, mflCodes);
-                case HEI_AT_6_TO_8_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged6To8Dto.class, mflCodes);
-                case HEI_AT_24_WEEKS -> validateEvent(eventBase.getEvent(), HeiAged24Dto.class, mflCodes);
-                case MORTALITY -> validateEvent(eventBase.getEvent(), MortalityDto.class, mflCodes);
-                case MISSED_VL_OPPORTUNITIES -> validateEvent(eventBase.getEvent(), MissedVlOpportunitiesDto.class, mflCodes);
-                case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> validateEvent(eventBase.getEvent(), UnsuppressedVlWithoutEacWithin2WeeksDto.class, mflCodes);
-                case ROLL_CALL -> validateEvent(eventBase.getEvent(), RollCallDto.class, mflCodes);
-                default -> LOG.warn("Unsupported event type: {}", eventBase.getEventType());
+            if (siteCode != null) {
+                metrics.merge(new MetricKey(siteCode, eventType), 1L, Long::sum);
             }
-        });
-    }
-    private void validateEvent(Object object, Class<?> mapping, Set<String> mflCodes) {
-        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        Set<ConstraintViolation<Object>> violations = validator.validate(mapper.convertValue(object, mapping));
-        if (!violations.isEmpty()) {
-            Map<String, String> errors = new HashMap<>();
-            violations.forEach(violation -> {
-                        errors.put(violation.getPropertyPath().toString() + " (" + violation.getInvalidValue() + ")", violation.getMessage());
-                        LOG.error("Request validation failed: {} : {}", violation.getPropertyPath().toString(), violation.getMessage() );
-                    }
-            );
+
+            if (validate) {
+                Class<?> dtoClass = dtoClassFor(eventType);
+                if (dtoClass == null) {
+                    LOG.warn("Unsupported event type: {}", eventType);
+                } else {
+                    collectViolations(eventBase.getEvent(), dtoClass, errors);
+                }
+            }
+        }
+
+        if (validate && !errors.isEmpty()) {
             throw new RequestValidationException(errors, mflCodes);
         }
+
+        return new BatchContext(mflCodes, emrVersion, metrics);
     }
+
+    private Class<?> dtoClassFor(String eventType) {
+        return switch (eventType) {
+            case NEW_EVENT_TYPE -> NewCaseDto.class;
+            case LINKED_EVENT_TYPE -> LinkedCaseDto.class;
+            case AT_RISK_PBFW -> AtRiskPbfwDto.class;
+            case PREP_LINKED_AT_RISK_PBFW -> PrepLinkedAtRiskPbfwDto.class;
+            case PREP_UPTAKE -> PrepUptakeDto.class;
+            case ELIGIBLE_FOR_VL -> EligibleForVlDto.class;
+            case UNSUPPRESSED_VIRAL_LOAD -> UnsuppressedViralLoadDto.class;
+            case HEI_WITHOUT_PCR -> HeiWithoutPcrDto.class;
+            case HEI_WITHOUT_FINAL_OUTCOME -> HeiWithoutFinalOutcomeDto.class;
+            case HEI_AT_6_TO_8_WEEKS -> HeiAged6To8Dto.class;
+            case HEI_AT_24_WEEKS -> HeiAged24Dto.class;
+            case MORTALITY -> MortalityDto.class;
+            case MISSED_VL_OPPORTUNITIES -> MissedVlOpportunitiesDto.class;
+            case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> UnsuppressedVlWithoutEacWithin2WeeksDto.class;
+            case ROLL_CALL -> RollCallDto.class;
+            default -> null;
+        };
+    }
+
+    private void collectViolations(Object object, Class<?> mapping, Map<String, String> errors) {
+        Set<ConstraintViolation<Object>> violations = validator.validate(mapper.convertValue(object, mapping));
+        for (ConstraintViolation<Object> violation : violations) {
+            errors.put(violation.getPropertyPath().toString() + " (" + violation.getInvalidValue() + ")", violation.getMessage());
+            LOG.error("Request validation failed: {} : {}", violation.getPropertyPath().toString(), violation.getMessage());
+        }
+    }
+
+    private record MetricKey(String siteCode, String eventType) {
+    }
+
+    private record BatchContext(Set<String> mflCodes, String emrVersion, Map<MetricKey, Long> metrics) {}
 }
