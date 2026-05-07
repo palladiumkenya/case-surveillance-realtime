@@ -95,14 +95,13 @@ public class EventService {
 
     private <T> void handleEventUpload(EventBaseMessage<?> msg, Class<T> dtoClass,
                                         Function<T, String> mflCodeExtractor,
-                                        Function<T, String> createdAtExtractor, Boolean threshHoldValidate) {
+                                        Function<T, String> keyDateExtractor, Boolean threshHoldValidate) {
         T eventDto = mapper.convertValue(msg.getEventBase().getEvent(), dtoClass);
 
-        String createdAt = createdAtExtractor.apply(eventDto);
+        String keyEventDate = keyDateExtractor.apply(eventDto);
         // Filter events earlier than program start
         if (threshHoldValidate) {
-            if (Boolean.TRUE.equals(isEarlierThanThreshold(createdAt, GLOBAL_START_THRESHOLD))) {
-//                LOG.info("Skipping {} earlier than program start", msg.getEventBase().getEventType());
+            if (Boolean.TRUE.equals(isEarlierThanThreshold(keyEventDate, GLOBAL_START_THRESHOLD))) {
                 return;
             }
         }
@@ -117,8 +116,8 @@ public class EventService {
         LOG.debug("Received {} event pk: {}, mflCode: {}", eventType, patientPk, mflCode);
 
         UUID vendorId = getVendorId(msg.getEmrVendor());
-        String recordId = generateUniqueEventId(patientPk, mflCode, eventType, createdAt);
-        String hashInputs = joinHashInputs(patientPk, mflCode, eventType, createdAt);
+        String recordId = generateUniqueEventId(patientPk, mflCode, eventType, keyEventDate);
+        String hashInputs = joinHashInputs(patientPk, mflCode, eventType, keyEventDate);
         Event existingEvent = eventRepository.findByEventUniqueId(recordId)
                 .orElse(null);
 
@@ -131,11 +130,9 @@ public class EventService {
 
         // EligibleForVl checks both visitDate and createdAt thresholds
         if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), START_THRESHOLD))) {
-//            LOG.info("Skipping eligible for vl visitDate earlier than program start: {}", eventDto.getVisitDate());
             return;
         }
         if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getCreatedAt(), START_THRESHOLD))) {
-//            LOG.info("Skipping eligible for vl createdAt earlier than program start: {}", eventDto.getCreatedAt());
             return;
         }
 
