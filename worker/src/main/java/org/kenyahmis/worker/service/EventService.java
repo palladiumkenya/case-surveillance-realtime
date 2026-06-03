@@ -36,6 +36,7 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
     private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 2, 1).atStartOfDay();
+    private static final LocalDateTime HEI68_START_THRESHOLD = LocalDate.of(2026, 5, 1).atStartOfDay();
 
     private final EventRepository eventRepository;
     private final ClientRepository clientRepository;
@@ -71,22 +72,22 @@ public class EventService {
     private void processEvent(EventBaseMessage<?> msg) {
         String eventType = msg.getEventBase().getEventType();
         switch (eventType) {
-            case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt, true);
-            case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, LinkedCaseDto::getCreatedAt, false);
-            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true);
-            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true);
-            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true);
-            case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true);
+            case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
+            case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, LinkedCaseDto::getCreatedAt, false, GLOBAL_START_THRESHOLD);
+            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
+            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
+            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true, GLOBAL_START_THRESHOLD);
+            case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true, GLOBAL_START_THRESHOLD);
             case ELIGIBLE_FOR_VL -> handleEligibleForVlEventUpload(msg);
-            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true);
-            case MISSED_VL_OPPORTUNITIES -> handleEventUpload(msg, MissedVlOpportunitiesDto.class, MissedVlOpportunitiesDto::mflCode, MissedVlOpportunitiesDto::createdAt, true);
-            case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> handleEventUpload(msg, UnsuppressedVlWithoutEacWithin2WeeksDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto::mflCode, UnsuppressedVlWithoutEacWithin2WeeksDto::createdAt, true);
-            case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false);
-            case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false);
-            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true);
+            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true, GLOBAL_START_THRESHOLD);
+            case MISSED_VL_OPPORTUNITIES -> handleEventUpload(msg, MissedVlOpportunitiesDto.class, MissedVlOpportunitiesDto::mflCode, MissedVlOpportunitiesDto::createdAt, true, GLOBAL_START_THRESHOLD);
+            case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> handleEventUpload(msg, UnsuppressedVlWithoutEacWithin2WeeksDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto::mflCode, UnsuppressedVlWithoutEacWithin2WeeksDto::createdAt, true, GLOBAL_START_THRESHOLD);
+            case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false, GLOBAL_START_THRESHOLD);
+            case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false, GLOBAL_START_THRESHOLD);
+            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true, HEI68_START_THRESHOLD);
             case HEI_AT_24_WEEKS -> {
                 msg.getEventBase().setEventType(HEI_AT_6_TO_8_WEEKS);
-                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true);
+                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true, HEI68_START_THRESHOLD);
             }
             case ROLL_CALL -> LOG.info("Received roll_call event, ignore");
             default -> LOG.warn("Event Type: {} not handled", eventType);
@@ -95,13 +96,14 @@ public class EventService {
 
     private <T> void handleEventUpload(EventBaseMessage<?> msg, Class<T> dtoClass,
                                         Function<T, String> mflCodeExtractor,
-                                        Function<T, String> keyDateExtractor, Boolean threshHoldValidate) {
+                                        Function<T, String> keyDateExtractor, Boolean threshHoldValidate,
+                                        LocalDateTime startThreshold) {
         T eventDto = mapper.convertValue(msg.getEventBase().getEvent(), dtoClass);
 
         String keyEventDate = keyDateExtractor.apply(eventDto);
         // Filter events earlier than program start
         if (threshHoldValidate) {
-            if (Boolean.TRUE.equals(isEarlierThanThreshold(keyEventDate, GLOBAL_START_THRESHOLD))) {
+            if (Boolean.TRUE.equals(isEarlierThanThreshold(keyEventDate, startThreshold))) {
                 return;
             }
         }
@@ -126,7 +128,7 @@ public class EventService {
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
         EligibleForVlDto eventDto = mapper.convertValue(msg.getEventBase().getEvent(), EligibleForVlDto.class);
-        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 5, 1).atStartOfDay();
+        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
 
         // EligibleForVl checks both visitDate and createdAt thresholds
         if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), START_THRESHOLD))) {

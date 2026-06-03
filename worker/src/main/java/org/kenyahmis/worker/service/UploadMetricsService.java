@@ -43,6 +43,5 @@ public class UploadMetricsService {
             rows.add(row);
         }
         uploadMetricsRepository.saveAll(rows);
-        LOG.info("Persisted {} upload metrics rows", rows.size());
     }
 }

@@ -152,6 +152,9 @@ public class EventController {
 
         if (!duplicate) {
             for (EventBase<?> eventBase : eventList) {
+                if (ELIGIBLE_FOR_VL.equals(eventBase.getEventType())) {
+                    continue;
+                }
                 kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
             }
             if (rateLimitingEnabled) {
