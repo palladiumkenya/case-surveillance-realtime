@@ -35,7 +35,8 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 @Service
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
-    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 2, 1).atStartOfDay();
+    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
+    private static final LocalDateTime MISSED_VL_START_THRESHOLD = LocalDate.of(2026, 4, 1).atStartOfDay();
     private static final LocalDateTime HEI68_START_THRESHOLD = LocalDate.of(2026, 5, 1).atStartOfDay();
 
     private final EventRepository eventRepository;
@@ -79,8 +80,8 @@ public class EventService {
             case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true, GLOBAL_START_THRESHOLD);
             case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true, GLOBAL_START_THRESHOLD);
             case ELIGIBLE_FOR_VL -> handleEligibleForVlEventUpload(msg);
-            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true, GLOBAL_START_THRESHOLD);
-            case MISSED_VL_OPPORTUNITIES -> handleEventUpload(msg, MissedVlOpportunitiesDto.class, MissedVlOpportunitiesDto::mflCode, MissedVlOpportunitiesDto::createdAt, true, GLOBAL_START_THRESHOLD);
+            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true, MISSED_VL_START_THRESHOLD);
+            case MISSED_VL_OPPORTUNITIES -> handleEventUpload(msg, MissedVlOpportunitiesDto.class, MissedVlOpportunitiesDto::mflCode, MissedVlOpportunitiesDto::createdAt, true, MISSED_VL_START_THRESHOLD);
             case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> handleEventUpload(msg, UnsuppressedVlWithoutEacWithin2WeeksDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto::mflCode, UnsuppressedVlWithoutEacWithin2WeeksDto::createdAt, true, GLOBAL_START_THRESHOLD);
             case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false, GLOBAL_START_THRESHOLD);
             case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false, GLOBAL_START_THRESHOLD);
