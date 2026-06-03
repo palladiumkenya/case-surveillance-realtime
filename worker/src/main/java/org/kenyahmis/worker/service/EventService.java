@@ -35,7 +35,7 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 @Service
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
-    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
+    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 2, 1).atStartOfDay();
 
     private final EventRepository eventRepository;
     private final ClientRepository clientRepository;
@@ -126,7 +126,7 @@ public class EventService {
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
         EligibleForVlDto eventDto = mapper.convertValue(msg.getEventBase().getEvent(), EligibleForVlDto.class);
-        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 4, 1).atStartOfDay();
+        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 5, 1).atStartOfDay();
 
         // EligibleForVl checks both visitDate and createdAt thresholds
         if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), START_THRESHOLD))) {
