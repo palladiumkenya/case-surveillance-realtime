@@ -14,6 +14,10 @@ public abstract class EventMapper {
     public Event eventDtoToEventModel(Object evenDto, Event existingEvent) {
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Event event = (existingEvent == null) ? new Event() : existingEvent;
+        // initial_load_date captures the first time the record is persisted; set once and never updated thereafter
+        if (event.getInitialLoadDate() == null) {
+            event.setInitialLoadDate(LocalDateTime.now());
+        }
         if (evenDto instanceof NewCaseDto) {
             event.setEventType(GlobalConstants.NEW_EVENT_TYPE);
             event.setMflCode( ((NewCaseDto) evenDto).getMflCode());

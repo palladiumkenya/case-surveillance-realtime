@@ -68,6 +68,8 @@ public class Event {
     private MissedVlOpportunities missedVlOpportunities;
     @Column(name = "load_date")
     private LocalDateTime timestamp;
+    @Column(name = "initial_load_date", updatable = false)
+    private LocalDateTime initialLoadDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
