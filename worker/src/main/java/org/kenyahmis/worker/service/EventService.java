@@ -35,8 +35,8 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 @Service
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
-    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
-    private static final LocalDateTime MISSED_VL_START_THRESHOLD = LocalDate.of(2026, 4, 1).atStartOfDay();
+    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
+    private static final LocalDateTime MISSED_VL_START_THRESHOLD = LocalDate.of(2026, 5, 1).atStartOfDay();
     private static final LocalDateTime HEI68_START_THRESHOLD = LocalDate.of(2026, 5, 1).atStartOfDay();
 
     private final EventRepository eventRepository;
