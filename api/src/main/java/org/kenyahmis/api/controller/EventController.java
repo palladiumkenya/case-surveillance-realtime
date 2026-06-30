@@ -152,10 +152,21 @@ public class EventController {
 
         if (!duplicate) {
             for (EventBase<?> eventBase : eventList) {
-                if (ELIGIBLE_FOR_VL.equals(eventBase.getEventType())) {
+                String eventType = eventBase.getEventType();
+                if (ELIGIBLE_FOR_VL.equals(eventType)) {
                     continue;
                 }
-                kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
+                if (PREP_UPTAKE.equals(eventType) || PREP_LINKED_AT_RISK_PBFW.equals(eventType)
+                        || AT_RISK_PBFW.equals(eventType)) {
+                    kafkaTemplate.send("prep_events", new EventBaseMessage<>(eventBase, emrVendor));
+                } else if (NEW_EVENT_TYPE.equals(eventType) || LINKED_EVENT_TYPE.equals(eventType)) {
+                    kafkaTemplate.send("linkage_events", new EventBaseMessage<>(eventBase, emrVendor));
+                } else if (HEI_WITHOUT_PCR.equals(eventType) || HEI_WITHOUT_FINAL_OUTCOME.equals(eventType)
+                        || HEI_AT_6_TO_8_WEEKS.equals(eventType) || HEI_AT_24_WEEKS.equals(eventType)) {
+                    kafkaTemplate.send("hei_events", new EventBaseMessage<>(eventBase, emrVendor));
+                } else {
+                    kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
+                }
             }
             if (rateLimitingEnabled) {
                 cacheService.addEntry(checksum, rawPayload);
@@ -164,10 +175,10 @@ public class EventController {
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), ctx.mflCodes, emrVendor);
         }
 
-//        Instant uploadedAt = Instant.now();
-//        ctx.metrics.forEach((key, count) ->
-//                kafkaTemplate.send("upload_metrics", key.siteCode,
-//                        new UploadMetricsMessage(key.siteCode, key.eventType, count, uploadedAt)));
+        Instant uploadedAt = Instant.now();
+        ctx.metrics.forEach((key, count) ->
+                kafkaTemplate.send("upload_metrics", key.siteCode,
+                        new UploadMetricsMessage(key.siteCode, key.eventType, count, uploadedAt)));
 
         return new ResponseEntity<>(new APIResponse("Successfully added client events"), HttpStatus.ACCEPTED);
     }

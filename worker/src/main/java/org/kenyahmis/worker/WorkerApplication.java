@@ -52,6 +52,39 @@ public class WorkerApplication {
     }
 
 
+    // Prep Events Consumer configs
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<Integer, String> prepEventsKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<Integer, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(eventsConsumerFactory());
+        factory.setBatchListener(true);
+        factory.setConcurrency(2);
+        return factory;
+    }
+
+
+    // Linkage Events Consumer configs
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<Integer, String> linkageEventsKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<Integer, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(eventsConsumerFactory());
+        factory.setBatchListener(true);
+        factory.setConcurrency(1);
+        return factory;
+    }
+
+
+    // HEI Events Consumer configs
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<Integer, String> heiEventsKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<Integer, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(eventsConsumerFactory());
+        factory.setBatchListener(true);
+        factory.setConcurrency(2);
+        return factory;
+    }
+
+
     // Reporting Manifest Consumer configs
     @Bean
     public ConcurrentKafkaListenerContainerFactory<Integer, String> manifestKafkaListenerContainerFactory() {
