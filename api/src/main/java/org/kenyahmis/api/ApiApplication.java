@@ -58,6 +58,15 @@ public class ApiApplication {
     }
 
     @Bean
+    public NewTopic prepEventsTopic() {
+        return TopicBuilder.name("prep_events")
+                .partitions(2)
+                .replicas(1)
+                .config("retention.ms", String.valueOf(Duration.ofDays(3).toMillis()))
+                .build();
+    }
+
+    @Bean
     public NewTopic reportingManifestTopic() {
         return TopicBuilder.name("reporting_manifest")
                 .partitions(1)

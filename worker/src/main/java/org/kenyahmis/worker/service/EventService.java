@@ -36,6 +36,7 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
     private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
+    private static final LocalDateTime PREP_START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
     private static final LocalDateTime MISSED_VL_START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
     private static final LocalDateTime HEI68_START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
 
@@ -70,14 +71,14 @@ public class EventService {
         }
     }
 
-    private void processEvent(EventBaseMessage<?> msg) {
+    public void processEvent(EventBaseMessage<?> msg) {
         String eventType = msg.getEventBase().getEventType();
         switch (eventType) {
             case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
             case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, LinkedCaseDto::getCreatedAt, false, GLOBAL_START_THRESHOLD);
             case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
-            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
-            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true, GLOBAL_START_THRESHOLD);
+            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true, PREP_START_THRESHOLD);
+            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true, PREP_START_THRESHOLD);
             case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true, GLOBAL_START_THRESHOLD);
             case ELIGIBLE_FOR_VL -> handleEligibleForVlEventUpload(msg);
             case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true, MISSED_VL_START_THRESHOLD);
