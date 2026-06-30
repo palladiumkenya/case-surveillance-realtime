@@ -74,6 +74,17 @@ public class WorkerApplication {
     }
 
 
+    // HEI Events Consumer configs
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<Integer, String> heiEventsKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<Integer, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(eventsConsumerFactory());
+        factory.setBatchListener(true);
+        factory.setConcurrency(2);
+        return factory;
+    }
+
+
     // Reporting Manifest Consumer configs
     @Bean
     public ConcurrentKafkaListenerContainerFactory<Integer, String> manifestKafkaListenerContainerFactory() {

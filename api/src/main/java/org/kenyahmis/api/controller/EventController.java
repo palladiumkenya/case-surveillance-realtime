@@ -161,6 +161,9 @@ public class EventController {
                     kafkaTemplate.send("prep_events", new EventBaseMessage<>(eventBase, emrVendor));
                 } else if (NEW_EVENT_TYPE.equals(eventType) || LINKED_EVENT_TYPE.equals(eventType)) {
                     kafkaTemplate.send("linkage_events", new EventBaseMessage<>(eventBase, emrVendor));
+                } else if (HEI_WITHOUT_PCR.equals(eventType) || HEI_WITHOUT_FINAL_OUTCOME.equals(eventType)
+                        || HEI_AT_6_TO_8_WEEKS.equals(eventType) || HEI_AT_24_WEEKS.equals(eventType)) {
+                    kafkaTemplate.send("hei_events", new EventBaseMessage<>(eventBase, emrVendor));
                 } else {
                     kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
                 }
