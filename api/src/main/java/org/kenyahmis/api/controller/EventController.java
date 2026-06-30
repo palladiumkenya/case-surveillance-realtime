@@ -147,8 +147,6 @@ public class EventController {
         }
 
         BatchContext ctx = processBatch(eventList, !duplicate);
-        LOG.info("Received {} records from sites {}, vendor {}, duplicate={}",
-                eventList.size(), ctx.mflCodes, emrVendor, duplicate);
 
         if (!duplicate) {
             for (EventBase<?> eventBase : eventList) {
@@ -172,7 +170,6 @@ public class EventController {
                 cacheService.addEntry(checksum, rawPayload);
             }
             kafkaTemplate.send("reporting_manifest", new ManifestMessage(ctx.mflCodes, emrVendor, ctx.emrVersion));
-            LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), ctx.mflCodes, emrVendor);
         }
 
         Instant uploadedAt = Instant.now();
