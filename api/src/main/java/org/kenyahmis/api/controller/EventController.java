@@ -159,6 +159,8 @@ public class EventController {
                 if (PREP_UPTAKE.equals(eventType) || PREP_LINKED_AT_RISK_PBFW.equals(eventType)
                         || AT_RISK_PBFW.equals(eventType)) {
                     kafkaTemplate.send("prep_events", new EventBaseMessage<>(eventBase, emrVendor));
+                } else if (NEW_EVENT_TYPE.equals(eventType) || LINKED_EVENT_TYPE.equals(eventType)) {
+                    kafkaTemplate.send("linkage_events", new EventBaseMessage<>(eventBase, emrVendor));
                 } else {
                     kafkaTemplate.send("events", new EventBaseMessage<>(eventBase, emrVendor));
                 }
