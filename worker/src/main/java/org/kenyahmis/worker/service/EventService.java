@@ -76,7 +76,7 @@ public class EventService {
         switch (eventType) {
             case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
             case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, LinkedCaseDto::getCreatedAt, false, GLOBAL_START_THRESHOLD);
-            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
+            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true, PREP_START_THRESHOLD);
             case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true, PREP_START_THRESHOLD);
             case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true, PREP_START_THRESHOLD);
             case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true, GLOBAL_START_THRESHOLD);
