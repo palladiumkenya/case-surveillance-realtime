@@ -50,7 +50,7 @@ public class WorkerApplication {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         // Cap batch size so each poll is processed and committed well within max.poll.interval.ms,
         // preventing rebalance loops where offsets never advance and records are reprocessed.
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 50);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
         props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 600000);
         return props;
     }
@@ -138,6 +138,8 @@ public class WorkerApplication {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS, "uploadMetricsMessage:org.kenyahmis.shared.dto.UploadMetricsMessage");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 600000);
         return props;
     }
 
