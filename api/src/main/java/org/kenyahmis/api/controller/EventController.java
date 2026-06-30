@@ -169,10 +169,10 @@ public class EventController {
             LOG.info("Processing {} records from sites {}, vendor {}", eventList.size(), ctx.mflCodes, emrVendor);
         }
 
-//        Instant uploadedAt = Instant.now();
-//        ctx.metrics.forEach((key, count) ->
-//                kafkaTemplate.send("upload_metrics", key.siteCode,
-//                        new UploadMetricsMessage(key.siteCode, key.eventType, count, uploadedAt)));
+        Instant uploadedAt = Instant.now();
+        ctx.metrics.forEach((key, count) ->
+                kafkaTemplate.send("upload_metrics", key.siteCode,
+                        new UploadMetricsMessage(key.siteCode, key.eventType, count, uploadedAt)));
 
         return new ResponseEntity<>(new APIResponse("Successfully added client events"), HttpStatus.ACCEPTED);
     }
