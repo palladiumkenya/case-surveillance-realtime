@@ -17,6 +17,7 @@ import org.kenyahmis.worker.model.Event;
 import org.kenyahmis.worker.repository.ClientRepository;
 import org.kenyahmis.worker.repository.EmrVendorRepository;
 import org.kenyahmis.worker.repository.EventRepository;
+import org.kenyahmis.worker.config.EventThresholdProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -35,10 +36,11 @@ import static org.kenyahmis.shared.constants.GlobalConstants.*;
 @Service
 public class EventService {
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
-    private static final LocalDateTime GLOBAL_START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
-    private static final LocalDateTime PREP_START_THRESHOLD = LocalDate.of(2026, 1, 1).atStartOfDay();
-    private static final LocalDateTime MISSED_VL_START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
-    private static final LocalDateTime HEI68_START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
+
+    private final LocalDateTime globalStartThreshold;
+    private final LocalDateTime prepStartThreshold;
+    private final LocalDateTime vlStartThreshold;
+    private final LocalDateTime heiStartThreshold;
 
     private final EventRepository eventRepository;
     private final ClientRepository clientRepository;
@@ -50,12 +52,19 @@ public class EventService {
     private final Map<String, UUID> vendorCache = new ConcurrentHashMap<>();
 
     public EventService(final EventRepository eventRepository, final ClientRepository clientRepository,
-                        final EmrVendorRepository emrVendorRepository, final ClientMapper clientMapper, final EventMapper eventMapper) {
+                        final EmrVendorRepository emrVendorRepository, final ClientMapper clientMapper, final EventMapper eventMapper,
+                        final EventThresholdProperties thresholds) {
         this.eventRepository = eventRepository;
         this.clientRepository = clientRepository;
         this.emrVendorRepository = emrVendorRepository;
         this.eventMapper = eventMapper;
         this.clientMapper = clientMapper;
+        this.globalStartThreshold = thresholds.globalStart();
+        this.prepStartThreshold = thresholds.prepStart();
+        this.vlStartThreshold = thresholds.vlStart();
+        this.heiStartThreshold = thresholds.heiStart();
+        LOG.info("Event thresholds -> global: {}, prep: {}, vl: {}, hei: {}",
+                this.globalStartThreshold, this.prepStartThreshold, this.vlStartThreshold, this.heiStartThreshold);
     }
 
     @KafkaListener(id = "eventListener", topics = "events", containerFactory = "eventsKafkaListenerContainerFactory")
@@ -74,22 +83,22 @@ public class EventService {
     public void processEvent(EventBaseMessage<?> msg) {
         String eventType = msg.getEventBase().getEventType();
         switch (eventType) {
-            case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt, true, GLOBAL_START_THRESHOLD);
-            case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, LinkedCaseDto::getCreatedAt, false, GLOBAL_START_THRESHOLD);
-            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true, PREP_START_THRESHOLD);
-            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true, PREP_START_THRESHOLD);
-            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true, PREP_START_THRESHOLD);
-            case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true, GLOBAL_START_THRESHOLD);
+            case NEW_EVENT_TYPE -> handleEventUpload(msg, NewCaseDto.class, NewCaseDto::getMflCode, NewCaseDto::getCreatedAt, true, globalStartThreshold);
+            case LINKED_EVENT_TYPE -> handleEventUpload(msg, LinkedCaseDto.class, LinkedCaseDto::getMflCode, LinkedCaseDto::getCreatedAt, false, globalStartThreshold);
+            case AT_RISK_PBFW -> handleEventUpload(msg, AtRiskPbfwDto.class, AtRiskPbfwDto::getMflCode, AtRiskPbfwDto::getCreatedAt, true, prepStartThreshold);
+            case PREP_LINKED_AT_RISK_PBFW -> handleEventUpload(msg, PrepLinkedAtRiskPbfwDto.class, PrepLinkedAtRiskPbfwDto::getMflCode, PrepLinkedAtRiskPbfwDto::getCreatedAt, true, prepStartThreshold);
+            case PREP_UPTAKE -> handleEventUpload(msg, PrepUptakeDto.class, PrepUptakeDto::mflCode, PrepUptakeDto::createdAt, true, prepStartThreshold);
+            case MORTALITY -> handleEventUpload(msg, MortalityDto.class, MortalityDto::mflCode, MortalityDto::createdAt, true, globalStartThreshold);
             case ELIGIBLE_FOR_VL -> handleEligibleForVlEventUpload(msg);
-            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true, MISSED_VL_START_THRESHOLD);
-            case MISSED_VL_OPPORTUNITIES -> handleEventUpload(msg, MissedVlOpportunitiesDto.class, MissedVlOpportunitiesDto::mflCode, MissedVlOpportunitiesDto::createdAt, true, MISSED_VL_START_THRESHOLD);
-            case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> handleEventUpload(msg, UnsuppressedVlWithoutEacWithin2WeeksDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto::mflCode, UnsuppressedVlWithoutEacWithin2WeeksDto::createdAt, true, GLOBAL_START_THRESHOLD);
-            case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false, GLOBAL_START_THRESHOLD);
-            case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false, GLOBAL_START_THRESHOLD);
-            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true, HEI68_START_THRESHOLD);
+            case UNSUPPRESSED_VIRAL_LOAD -> handleEventUpload(msg, UnsuppressedViralLoadDto.class, UnsuppressedViralLoadDto::mflCode, UnsuppressedViralLoadDto::createdAt, true, vlStartThreshold);
+            case MISSED_VL_OPPORTUNITIES -> handleEventUpload(msg, MissedVlOpportunitiesDto.class, MissedVlOpportunitiesDto::mflCode, MissedVlOpportunitiesDto::createdAt, true, vlStartThreshold);
+            case UNSUPPRESSED_VL_WITHOUT_EAC_WITHIN_2_WEEKS -> handleEventUpload(msg, UnsuppressedVlWithoutEacWithin2WeeksDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto::mflCode, UnsuppressedVlWithoutEacWithin2WeeksDto::createdAt, true, vlStartThreshold);
+            case HEI_WITHOUT_PCR -> handleEventUpload(msg, HeiWithoutPcrDto.class, HeiWithoutPcrDto::mflCode, HeiWithoutPcrDto::createdAt, false, globalStartThreshold);
+            case HEI_WITHOUT_FINAL_OUTCOME -> handleEventUpload(msg, HeiWithoutFinalOutcomeDto.class, HeiWithoutFinalOutcomeDto::mflCode, HeiWithoutFinalOutcomeDto::createdAt, false, globalStartThreshold);
+            case HEI_AT_6_TO_8_WEEKS -> handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true, heiStartThreshold);
             case HEI_AT_24_WEEKS -> {
                 msg.getEventBase().setEventType(HEI_AT_6_TO_8_WEEKS);
-                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true, HEI68_START_THRESHOLD);
+                handleEventUpload(msg, HeiAged6To8Dto.class, HeiAged6To8Dto::mflCode, HeiAged6To8Dto::createdAt, true, heiStartThreshold);
             }
             case ROLL_CALL -> LOG.info("Received roll_call event, ignore");
             default -> LOG.warn("Event Type: {} not handled", eventType);
@@ -130,13 +139,12 @@ public class EventService {
 
     private void handleEligibleForVlEventUpload(EventBaseMessage<?> msg) {
         EligibleForVlDto eventDto = mapper.convertValue(msg.getEventBase().getEvent(), EligibleForVlDto.class);
-        final LocalDateTime START_THRESHOLD = LocalDate.of(2026, 6, 1).atStartOfDay();
 
         // EligibleForVl checks both visitDate and createdAt thresholds
-        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), START_THRESHOLD))) {
+        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getVisitDate(), vlStartThreshold))) {
             return;
         }
-        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getCreatedAt(), START_THRESHOLD))) {
+        if (Boolean.TRUE.equals(isEarlierThanThreshold(eventDto.getCreatedAt(), vlStartThreshold))) {
             return;
         }
 
