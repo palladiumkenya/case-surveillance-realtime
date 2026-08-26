@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 
 public class FlexibleDateTimeParser {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -17,6 +16,18 @@ public class FlexibleDateTimeParser {
             try {
                 LocalDate date = LocalDate.parse(input, DATE_FORMATTER);
                 return date.atStartOfDay();
+            } catch (DateTimeParseException ex) {
+                throw new IllegalArgumentException("Unsupported date format: " + input, ex);
+            }
+        }
+    }
+
+    public static LocalDate parseDate(String input) {
+        try {
+            return LocalDate.parse(input, DATE_FORMATTER);
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDateTime.parse(input, DATE_TIME_FORMATTER).toLocalDate();
             } catch (DateTimeParseException ex) {
                 throw new IllegalArgumentException("Unsupported date format: " + input, ex);
             }

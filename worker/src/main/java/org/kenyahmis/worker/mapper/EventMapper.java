@@ -108,10 +108,10 @@ public abstract class EventMapper {
                 prepUptake.setPrepStartDate(FlexibleDateTimeParser.parse(((PrepUptakeDto) evenDto).prepStartDate()));
             }
             if (((PrepUptakeDto) evenDto).dateSwitchedPrep() !=  null) {
-                prepUptake.setDateSwitchedPrep(LocalDate.parse(((PrepUptakeDto) evenDto).dateSwitchedPrep()));
+                prepUptake.setDateSwitchedPrep(FlexibleDateTimeParser.parseDate(((PrepUptakeDto) evenDto).dateSwitchedPrep()));
             }
             if (((PrepUptakeDto) evenDto).dateDiscontinuedFromPrep() !=  null) {
-                prepUptake.setDateDiscontinuedFromPrep(LocalDate.parse(((PrepUptakeDto) evenDto).dateDiscontinuedFromPrep()));
+                prepUptake.setDateDiscontinuedFromPrep(FlexibleDateTimeParser.parseDate(((PrepUptakeDto) evenDto).dateDiscontinuedFromPrep()));
             }
             prepUptake.setEvent(event);
             event.setPrepUptake(prepUptake);
