@@ -38,6 +38,39 @@ class EventMapperTest {
     }
 
     @Test
+    void voided_null_defaultsToFalse() {
+        NewCaseDto dto = new NewCaseDto();
+        dto.setMflCode("12345");
+
+        Event result = eventMapper.eventDtoToEventModel(dto, null, null);
+
+        assertEquals(Boolean.FALSE, result.getVoided());
+    }
+
+    @Test
+    void voided_true_isMappedOntoEvent() {
+        NewCaseDto dto = new NewCaseDto();
+        dto.setMflCode("12345");
+
+        Event result = eventMapper.eventDtoToEventModel(dto, null, true);
+
+        assertEquals(Boolean.TRUE, result.getVoided());
+    }
+
+    @Test
+    void voided_falseOnExistingVoidedEvent_unsetsFlag() {
+        Event existing = new Event();
+        existing.setVoided(true);
+
+        NewCaseDto dto = new NewCaseDto();
+        dto.setMflCode("12345");
+
+        Event result = eventMapper.eventDtoToEventModel(dto, existing, false);
+
+        assertEquals(Boolean.FALSE, result.getVoided());
+    }
+
+    @Test
     void newCaseDto_existingEvent_reusesEventAndNewCase() {
         Event existing = new Event();
         NewCase existingNewCase = new NewCase();

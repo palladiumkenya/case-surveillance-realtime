@@ -66,6 +66,8 @@ public class Event {
     @JsonManagedReference
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private MissedVlOpportunities missedVlOpportunities;
+    @Column(name = "voided", nullable = false)
+    private Boolean voided = false;
     @Column(name = "load_date")
     private LocalDateTime timestamp;
     @Column(name = "initial_load_date", updatable = false)

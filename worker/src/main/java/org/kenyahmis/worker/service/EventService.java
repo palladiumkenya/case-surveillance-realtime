@@ -172,7 +172,7 @@ public class EventService {
 
     private void upsertEvent(EventBaseMessage<?> msg, Object eventDto, String patientPk,
                               String mflCode, String recordId, String hashInputs, UUID vendorId, Event existingEvent) {
-        Event event = eventMapper.eventDtoToEventModel(eventDto, existingEvent);
+        Event event = eventMapper.eventDtoToEventModel(eventDto, existingEvent, msg.getEventBase().getVoided());
         event.setEmrVendorId(vendorId);
         event.setHashInputs(hashInputs);
 

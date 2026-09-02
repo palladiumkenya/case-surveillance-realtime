@@ -11,6 +11,13 @@ import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring")
 public abstract class EventMapper {
+    public Event eventDtoToEventModel(Object evenDto, Event existingEvent, Boolean voided) {
+        Event event = eventDtoToEventModel(evenDto, existingEvent);
+        // voided is optional on the payload; absent means not voided
+        event.setVoided(Boolean.TRUE.equals(voided));
+        return event;
+    }
+
     public Event eventDtoToEventModel(Object evenDto, Event existingEvent) {
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Event event = (existingEvent == null) ? new Event() : existingEvent;

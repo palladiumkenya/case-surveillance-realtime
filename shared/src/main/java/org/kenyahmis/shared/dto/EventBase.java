@@ -30,6 +30,9 @@ public class EventBase<T> {
             HeiWithoutPcrDto.class, HeiWithoutFinalOutcomeDto.class, HeiAged6To8Dto.class, HeiAged24Dto.class, MortalityDto.class,
             MissedVlOpportunitiesDto.class, PrepUptakeDto.class, UnsuppressedVlWithoutEacWithin2WeeksDto.class, RollCallDto.class})
     private T event;
+    @Schema(description = "Marks the event as voided at source. Optional; defaults to false when omitted",
+            example = "false", defaultValue = "false")
+    private Boolean voided;
 
     public EventBase(ClientDto client, String eventType, T event) {
         this.client = client;
